@@ -1,7 +1,11 @@
 const pool = require('../config/db');
 const tripModel = require('../models/trip.model');
+const { findCity, distanceBetweenCities } = require('../constants/cities');
 
-async function validateForDispatch(client, { vehicleId, driverId, cargoWeightKg }) {
+const SERVICE_DUE_KM = 10000;
+const DRIVER_REST_HOURS = 8;
+
+async function validateForDispatch(client, { vehicleId, driverId, cargoWeightKg, source }) {
     const vehicleResult = await client.query('SELECT * FROM vehicles WHERE id = $1 FOR UPDATE', [vehicleId]);
     const vehicle = vehicleResult.rows[0];
     if (!vehicle) {
@@ -30,11 +34,48 @@ async function validateForDispatch(client, { vehicleId, driverId, cargoWeightKg 
     if (vehicle.status !== 'available') {
         return { error: { status: 422, message: 'Vehicle is not available' } };
     }
+
+    const kmSinceService = Number(vehicle.odometer_km) - Number(vehicle.last_service_odometer_km);
+    if (kmSinceService > SERVICE_DUE_KM) {
+        return {
+            error: {
+                status: 422,
+                message: `Vehicle is due for service (${kmSinceService.toLocaleString()} km since last service, limit ${SERVICE_DUE_KM.toLocaleString()} km)`,
+            },
+        };
+    }
+
+    if (vehicle.current_location_city && source && vehicle.current_location_city.toLowerCase() !== source.toLowerCase()) {
+        return {
+            error: {
+                status: 422,
+                message: `Vehicle is currently at ${vehicle.current_location_city}, not at the trip's source (${source})`,
+            },
+        };
+    }
+
     if (driver.status !== 'available') {
         return { error: { status: 422, message: 'Driver is not available' } };
     }
     if (driver.is_expired) {
         return { error: { status: 422, message: "Driver's license has expired" } };
+    }
+
+    const restResult = await client.query(
+        `SELECT completed_at FROM trips WHERE driver_id = $1 AND status = 'completed' ORDER BY completed_at DESC LIMIT 1`,
+        [driverId]
+    );
+    const lastCompletedAt = restResult.rows[0]?.completed_at;
+    if (lastCompletedAt) {
+        const hoursSinceRest = (Date.now() - new Date(lastCompletedAt).getTime()) / (1000 * 60 * 60);
+        if (hoursSinceRest < DRIVER_REST_HOURS) {
+            return {
+                error: {
+                    status: 422,
+                    message: `Driver must rest ${DRIVER_REST_HOURS}h after their last trip (${hoursSinceRest.toFixed(1)}h so far)`,
+                },
+            };
+        }
     }
 
     return { vehicle, driver };
@@ -68,14 +109,20 @@ async function create(req, res) {
     try {
         await client.query('BEGIN');
 
-        const { vehicle, driver, error } = await validateForDispatch(client, { vehicleId, driverId, cargoWeightKg });
+        const { vehicle, driver, error } = await validateForDispatch(client, {
+            vehicleId,
+            driverId,
+            cargoWeightKg,
+            source,
+        });
         if (error) {
             await client.query('ROLLBACK');
             return res.status(error.status).json({ message: error.message });
         }
 
+        const computedDistance = distanceBetweenCities(source, destination) ?? plannedDistanceKm ?? null;
         let trip = await tripModel.createTrip(
-            { source, destination, vehicleId, driverId, cargoWeightKg, plannedDistanceKm },
+            { source, destination, vehicleId, driverId, cargoWeightKg, plannedDistanceKm: computedDistance },
             client
         );
 
@@ -115,6 +162,7 @@ async function dispatch(req, res) {
             vehicleId: trip.vehicle_id,
             driverId: trip.driver_id,
             cargoWeightKg: trip.cargo_weight_kg,
+            source: trip.source,
         });
         if (error) {
             await client.query('ROLLBACK');
@@ -165,10 +213,14 @@ async function complete(req, res) {
         }
 
         const updated = await tripModel.markCompleted(trip.id, { endOdometerKm, fuelConsumedLiters }, client);
-        await client.query(`UPDATE vehicles SET status = 'available', odometer_km = $1, updated_at = now() WHERE id = $2`, [
-            endOdometerKm,
-            trip.vehicle_id,
-        ]);
+        const newLocationCity = findCity(trip.destination) ? trip.destination : null;
+        await client.query(
+            `UPDATE vehicles
+             SET status = 'available', odometer_km = $1, updated_at = now(),
+                 current_location_city = COALESCE($2, current_location_city)
+             WHERE id = $3`,
+            [endOdometerKm, newLocationCity, trip.vehicle_id]
+        );
         await client.query(`UPDATE drivers SET status = 'available', updated_at = now() WHERE id = $1`, [trip.driver_id]);
 
         await client.query('COMMIT');

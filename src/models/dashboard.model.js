@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { findCity } = require('../constants/cities');
 
 async function countsByStatus(table) {
     const result = await pool.query(`SELECT status, COUNT(*)::int AS count FROM ${table} GROUP BY status`);
@@ -23,11 +24,13 @@ async function getSummary() {
         expiredLicenses,
         vehiclesInShop,
         staleDrafts,
+        underutilizedVehicles,
         activeTrips,
         recentFuel,
         recentExpenses,
         readyVehicles,
         readyDrivers,
+        vehicleLocations,
     ] = await Promise.all([
         countsByStatus('vehicles'),
         countsByStatus('drivers'),
@@ -68,6 +71,15 @@ async function getSummary() {
              FROM trips WHERE status = 'draft' AND created_at < CURRENT_DATE ORDER BY created_at ASC`
         ),
         pool.query(
+            `SELECT v.id, v.registration_number, v.model
+             FROM vehicles v
+             WHERE v.status != 'retired'
+               AND NOT EXISTS (
+                   SELECT 1 FROM trips t WHERE t.vehicle_id = v.id AND t.created_at > now() - INTERVAL '14 days'
+               )
+             ORDER BY v.registration_number`
+        ),
+        pool.query(
             `SELECT t.id, ('TR-' || LPAD(t.seq::text, 3, '0')) AS trip_number, t.source, t.destination, t.status,
                 v.registration_number AS vehicle_registration, d.name AS driver_name
              FROM trips t
@@ -88,6 +100,10 @@ async function getSummary() {
         ),
         pool.query(`SELECT COUNT(*)::int AS count FROM vehicles WHERE status = 'available'`),
         pool.query(`SELECT COUNT(*)::int AS count FROM drivers WHERE status = 'available' AND license_expiry >= CURRENT_DATE`),
+        pool.query(
+            `SELECT id, registration_number, model, status, current_location_city
+             FROM vehicles WHERE status != 'retired' ORDER BY registration_number`
+        ),
     ]);
 
     const activeVehicleCount =
@@ -139,6 +155,7 @@ async function getSummary() {
             expiredLicenses: expiredLicenses.rows,
             vehiclesInShop: vehiclesInShop.rows,
             staleDrafts: staleDrafts.rows,
+            underutilizedVehicles: underutilizedVehicles.rows,
         },
         activeTrips: activeTrips.rows,
         recentFuel: recentFuel.rows,
@@ -147,6 +164,20 @@ async function getSummary() {
             vehicles: readyVehicles.rows[0].count,
             drivers: readyDrivers.rows[0].count,
         },
+        vehicleLocations: vehicleLocations.rows
+            .filter((v) => v.current_location_city && findCity(v.current_location_city))
+            .map((v) => {
+                const city = findCity(v.current_location_city);
+                return {
+                    id: v.id,
+                    registrationNumber: v.registration_number,
+                    model: v.model,
+                    status: v.status,
+                    city: v.current_location_city,
+                    lat: city.lat,
+                    lng: city.lng,
+                };
+            }),
     };
 }
 

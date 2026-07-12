@@ -30,10 +30,10 @@ export default function Sidebar() {
     return (
         <>
         <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-coal-600 bg-coal-900/95 px-4 backdrop-blur lg:hidden">
-            <div className="flex items-center gap-2">
+            <NavLink to="/" aria-label="Return to dashboard" className="focus-volt flex items-center gap-2 rounded-md">
                 <span className="h-2 w-2 bg-volt-400" />
                 <span className="font-display text-lg font-semibold tracking-wide">TRANSITOPS</span>
-            </div>
+            </NavLink>
             <div className="flex items-center gap-3">
                 <Avatar name={user.name} size={32} />
                 <button onClick={logout} aria-label="Log out" className="focus-volt rounded-lg p-2 text-smoke-400 hover:bg-coal-800 hover:text-smoke-100">
@@ -43,10 +43,10 @@ export default function Sidebar() {
         </header>
 
         <aside className="hidden h-full w-58 shrink-0 flex-col border-r border-coal-600 bg-coal-900 lg:flex">
-            <div className="flex items-center gap-2 px-5 py-5">
+            <NavLink to="/" aria-label="Return to dashboard" className="focus-volt mx-3 flex items-center gap-2 rounded-md px-2 py-5 transition hover:text-volt-400">
                 <span className="h-2 w-2 bg-volt-400" />
                 <span className="font-display text-lg font-semibold tracking-wide">TRANSITOPS</span>
-            </div>
+            </NavLink>
 
             <nav className="flex-1 space-y-1 px-3">{links}</nav>
 

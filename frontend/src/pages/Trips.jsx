@@ -10,6 +10,7 @@ import Field, { Input, Select } from '../components/Field';
 import StatusBadge from '../components/StatusBadge';
 import RuleCallout from '../components/RuleCallout';
 import EmptyState from '../components/EmptyState';
+import { CITIES, distanceBetweenCities } from '../constants/cities';
 
 const STATUS_FILTERS = ['draft', 'dispatched', 'completed', 'cancelled'];
 
@@ -19,7 +20,6 @@ const emptyForm = {
     vehicleId: '',
     driverId: '',
     cargoWeightKg: '',
-    plannedDistanceKm: '',
 };
 
 export default function Trips() {
@@ -75,6 +75,24 @@ export default function Trips() {
     const selectedVehicle = availableVehicles.find((v) => v.id === form.vehicleId);
     const cargoExceedsCapacity =
         selectedVehicle && form.cargoWeightKg && Number(form.cargoWeightKg) > Number(selectedVehicle.max_load_kg);
+    const cargoNearCapacity =
+        selectedVehicle &&
+        form.cargoWeightKg &&
+        !cargoExceedsCapacity &&
+        Number(form.cargoWeightKg) >= Number(selectedVehicle.max_load_kg) * 0.9;
+
+    const plannedDistance =
+        form.source && form.destination ? distanceBetweenCities(form.source, form.destination) : null;
+
+    const sortedVehicles = [...availableVehicles].sort((a, b) => {
+        if (!form.source) return 0;
+        const distA = a.current_location_city ? distanceBetweenCities(form.source, a.current_location_city) : null;
+        const distB = b.current_location_city ? distanceBetweenCities(form.source, b.current_location_city) : null;
+        if (distA === null && distB === null) return 0;
+        if (distA === null) return 1;
+        if (distB === null) return -1;
+        return distA - distB;
+    });
 
     async function handleSubmit(action) {
         setFormError('');
@@ -94,7 +112,6 @@ export default function Trips() {
                 vehicleId: form.vehicleId,
                 driverId: form.driverId,
                 cargoWeightKg: Number(form.cargoWeightKg),
-                plannedDistanceKm: form.plannedDistanceKm === '' ? null : Number(form.plannedDistanceKm),
                 action,
             });
             const trip = res.data.trip;
@@ -277,24 +294,55 @@ export default function Trips() {
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field label="Source">
-                            <Input value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
+                            <Select value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))}>
+                                <option value="">Select a city…</option>
+                                {CITIES.map((c) => (
+                                    <option key={c.name} value={c.name}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </Select>
                         </Field>
                         <Field label="Destination">
-                            <Input
+                            <Select
                                 value={form.destination}
                                 onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
-                            />
+                            >
+                                <option value="">Select a city…</option>
+                                {CITIES.map((c) => (
+                                    <option key={c.name} value={c.name}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </Select>
                         </Field>
                     </div>
+
+                    <Field label="Distance (auto-computed)">
+                        <div className="flex h-10 items-center rounded-lg border border-coal-600 bg-coal-800 px-3 text-sm font-mono text-smoke-100">
+                            {plannedDistance !== null ? `${plannedDistance} km` : '—'}
+                        </div>
+                    </Field>
 
                     <Field label="Vehicle">
                         <Select value={form.vehicleId} onChange={(e) => setForm((f) => ({ ...f, vehicleId: e.target.value }))}>
                             <option value="">Select an available vehicle…</option>
-                            {availableVehicles.map((v) => (
-                                <option key={v.id} value={v.id}>
-                                    {v.registration_number} · {v.model} · {Number(v.max_load_kg).toLocaleString()} kg
-                                </option>
-                            ))}
+                            {sortedVehicles.map((v) => {
+                                const dist =
+                                    form.source && v.current_location_city
+                                        ? distanceBetweenCities(form.source, v.current_location_city)
+                                        : null;
+                                return (
+                                    <option key={v.id} value={v.id}>
+                                        {v.registration_number} · {v.model} · {Number(v.max_load_kg).toLocaleString()} kg
+                                        {dist !== null
+                                            ? ` · ${dist} km from ${form.source}`
+                                            : v.current_location_city
+                                              ? ` · at ${v.current_location_city}`
+                                              : ' · location unknown'}
+                                    </option>
+                                );
+                            })}
                         </Select>
                     </Field>
 
@@ -320,14 +368,11 @@ export default function Trips() {
                                 value={form.cargoWeightKg}
                                 onChange={(e) => setForm((f) => ({ ...f, cargoWeightKg: e.target.value }))}
                             />
-                        </Field>
-                        <Field label="Planned distance (km)">
-                            <Input
-                                type="number"
-                                min="0"
-                                value={form.plannedDistanceKm}
-                                onChange={(e) => setForm((f) => ({ ...f, plannedDistanceKm: e.target.value }))}
-                            />
+                            {cargoNearCapacity && (
+                                <span className="mt-1 block text-xs text-status-draft">
+                                    Near capacity — {Math.round((Number(form.cargoWeightKg) / Number(selectedVehicle.max_load_kg)) * 100)}% of {Number(selectedVehicle.max_load_kg).toLocaleString()} kg
+                                </span>
+                            )}
                         </Field>
                     </div>
 

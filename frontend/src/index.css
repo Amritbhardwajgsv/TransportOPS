@@ -26,11 +26,45 @@
   --font-mono: "JetBrains Mono", monospace;
 }
 
+:root {
+  --page-gutter: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  :root { --page-gutter: 2rem; }
+}
+
+@media (min-width: 1024px) {
+  :root { --page-gutter: 3rem; }
+}
+
+:root[data-theme="light"] {
+  --color-coal-950: #fffdf5;
+  --color-coal-900: #fff9df;
+  --color-coal-800: #f8edb7;
+  --color-coal-600: #d8c875;
+
+  --color-smoke-400: #716b4f;
+  --color-smoke-100: #25230f;
+
+  --color-volt-400: #f4c430;
+  --color-volt-950: #2d2400;
+
+  --color-status-available: #16854b;
+  --color-status-ontrip: #9a7200;
+  --color-status-shop: #c45812;
+  --color-status-draft: #946200;
+  --color-status-completed: #16854b;
+  --color-status-idle: #716b4f;
+  --color-status-danger: #c83232;
+}
+
 @layer base {
   body {
     @apply bg-coal-950 text-smoke-100 font-sans antialiased;
     min-width: 320px;
     overflow-x: hidden;
+    transition: background-color 180ms ease, color 180ms ease;
   }
 
   button, a, input, select, textarea { touch-action: manipulation; }
@@ -49,6 +83,11 @@
 }
 
 @layer utilities {
+  .page-boundary {
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
+  }
+
   .hazard-stripe {
     background-image: repeating-linear-gradient(
       45deg,
@@ -57,6 +96,18 @@
       transparent 10px,
       transparent 20px
     );
+  }
+
+  :root[data-theme="light"] .hazard-stripe {
+    background-image:
+      radial-gradient(circle at 50% 15%, rgba(244, 196, 48, 0.22), transparent 40%),
+      repeating-linear-gradient(
+        45deg,
+        rgba(244, 196, 48, 0.08),
+        rgba(244, 196, 48, 0.08) 10px,
+        transparent 10px,
+        transparent 20px
+      );
   }
 
   .focus-volt {

@@ -1,10 +1,12 @@
 const vehicleModel = require('../models/vehicle.model');
+const { CITIES } = require('../constants/cities');
 
 const VEHICLE_TYPES = ['truck', 'van', 'trailer', 'pickup'];
 const MAX_PHOTO_LENGTH = 280000;
+const CITY_NAMES = CITIES.map((c) => c.name);
 
 function validateVehiclePayload(body) {
-    const { registrationNumber, model, type, maxLoadKg, photo } = body;
+    const { registrationNumber, model, type, maxLoadKg, photo, currentLocationCity } = body;
 
     if (!registrationNumber || !model || !type) {
         return 'registrationNumber, model and type are required';
@@ -17,6 +19,9 @@ function validateVehiclePayload(body) {
     }
     if (photo && photo.length > MAX_PHOTO_LENGTH) {
         return 'photo is too large (max ~200KB)';
+    }
+    if (currentLocationCity && !CITY_NAMES.includes(currentLocationCity)) {
+        return `currentLocationCity must be one of: ${CITY_NAMES.join(', ')}`;
     }
     return null;
 }
@@ -42,7 +47,8 @@ async function create(req, res) {
             return res.status(422).json({ message: error });
         }
 
-        const { registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost, photo } = req.body;
+        const { registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost, photo, currentLocationCity } =
+            req.body;
         const vehicle = await vehicleModel.createVehicle({
             registrationNumber,
             model,
@@ -51,6 +57,7 @@ async function create(req, res) {
             odometerKm,
             acquisitionCost,
             photo,
+            currentLocationCity,
         });
         return res.status(201).json({ vehicle });
     } catch (err) {
@@ -73,7 +80,8 @@ async function update(req, res) {
             return res.status(422).json({ message: error });
         }
 
-        const { registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost, photo } = req.body;
+        const { registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost, photo, currentLocationCity } =
+            req.body;
         const vehicle = await vehicleModel.updateVehicle(req.params.id, {
             registrationNumber,
             model,
@@ -82,6 +90,7 @@ async function update(req, res) {
             odometerKm: odometerKm ?? existing.odometer_km,
             acquisitionCost,
             photo,
+            currentLocationCity,
         });
         return res.status(200).json({ vehicle });
     } catch (err) {

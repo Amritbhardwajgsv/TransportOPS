@@ -54,7 +54,7 @@ function RoleSection({ icon: Icon, title, description, capabilities, reverse }) 
     return (
         <section
             ref={ref}
-            className="hazard-stripe flex min-h-screen items-center justify-center border-t border-coal-600 px-6 py-20"
+            className="page-boundary hazard-stripe flex min-h-screen items-center justify-center border-t border-coal-600 py-20"
             style={{ scrollSnapAlign: 'start' }}
         >
             <div className={`mx-auto flex w-full max-w-5xl flex-col items-center gap-12 md:flex-row ${reverse ? 'md:flex-row-reverse' : ''}`}>
@@ -90,13 +90,14 @@ export default function Landing() {
     return (
         <div className="h-screen overflow-y-auto bg-coal-950" style={{ scrollSnapType: 'y mandatory' }}>
             <section
-                className="hazard-stripe flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center"
+                id="top"
+                className="page-boundary hazard-stripe flex min-h-screen flex-col items-center justify-center gap-6 text-center"
                 style={{ scrollSnapAlign: 'start' }}
             >
-                <div className="flex items-center gap-2">
+                <a href="#top" aria-label="Return to top" className="focus-volt flex items-center gap-2 rounded-md transition hover:text-volt-400">
                     <span className="h-2.5 w-2.5 bg-volt-400" />
                     <span className="font-display text-xl font-semibold tracking-wide text-smoke-100">TRANSITOPS</span>
-                </div>
+                </a>
                 <h1 className="max-w-3xl font-display text-4xl font-semibold text-smoke-100 md:text-6xl">
                     <TypewriterText text="Fleet operations, off the spreadsheet." />
                 </h1>
@@ -117,7 +118,7 @@ export default function Landing() {
             ))}
 
             <section
-                className="flex min-h-screen flex-col items-center justify-center gap-6 border-t border-coal-600 px-6 text-center"
+                className="page-boundary flex min-h-screen flex-col items-center justify-center gap-6 border-t border-coal-600 text-center"
                 style={{ scrollSnapAlign: 'start' }}
             >
                 <h2 className="font-display text-3xl font-semibold text-smoke-100">Ready to get on the road?</h2>

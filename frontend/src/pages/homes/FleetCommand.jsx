@@ -10,6 +10,7 @@ import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
 import PhotoThumb from '../../components/PhotoThumb';
 import EmptyState from '../../components/EmptyState';
+import FleetMap from '../../components/FleetMap';
 
 export default function FleetCommand() {
     const navigate = useNavigate();
@@ -37,7 +38,8 @@ export default function FleetCommand() {
     const noAttention =
         data.attention.expiredLicenses.length === 0 &&
         data.attention.vehiclesInShop.length === 0 &&
-        data.attention.staleDrafts.length === 0;
+        data.attention.staleDrafts.length === 0 &&
+        data.attention.underutilizedVehicles.length === 0;
 
     return (
         <div className="space-y-6">
@@ -56,6 +58,13 @@ export default function FleetCommand() {
                     </div>
                 </KpiCard>
             </div>
+
+            {data.vehicleLocations.length > 0 && (
+                <div>
+                    <h2 className="mb-3 font-display text-lg font-semibold text-smoke-100">Live fleet map</h2>
+                    <FleetMap vehicles={data.vehicleLocations} />
+                </div>
+            )}
 
             <div>
                 <h2 className="mb-3 font-display text-lg font-semibold text-smoke-100">Fleet board</h2>
@@ -106,6 +115,12 @@ export default function FleetCommand() {
                         {data.attention.staleDrafts.map((t) => (
                             <div key={t.id} className="rounded-lg border border-coal-600 bg-coal-900 p-3 text-sm text-smoke-100">
                                 <span className="text-status-draft">Stale draft</span> — {t.trip_number}
+                            </div>
+                        ))}
+                        {data.attention.underutilizedVehicles.map((v) => (
+                            <div key={v.id} className="rounded-lg border border-coal-600 bg-coal-900 p-3 text-sm text-smoke-100">
+                                <span className="text-status-idle">Underutilized</span> —{' '}
+                                <span className="font-mono">{v.registration_number}</span>, no trips in 14 days
                             </div>
                         ))}
                         {noAttention && <p className="text-sm text-smoke-400">Nothing needs attention right now.</p>}

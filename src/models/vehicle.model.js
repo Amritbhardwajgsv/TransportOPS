@@ -26,24 +26,55 @@ async function findVehicleById(id) {
     return result.rows[0];
 }
 
-async function createVehicle({ registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost, photo }) {
+async function createVehicle({
+    registrationNumber,
+    model,
+    type,
+    maxLoadKg,
+    odometerKm,
+    acquisitionCost,
+    photo,
+    currentLocationCity,
+}) {
     const result = await pool.query(
-        `INSERT INTO vehicles (registration_number, model, type, max_load_kg, odometer_km, acquisition_cost, photo)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO vehicles (registration_number, model, type, max_load_kg, odometer_km, acquisition_cost, photo, current_location_city)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *`,
-        [registrationNumber, model, type, maxLoadKg, odometerKm ?? 0, acquisitionCost ?? null, photo ?? null]
+        [
+            registrationNumber,
+            model,
+            type,
+            maxLoadKg,
+            odometerKm ?? 0,
+            acquisitionCost ?? null,
+            photo ?? null,
+            currentLocationCity ?? null,
+        ]
     );
     return result.rows[0];
 }
 
-async function updateVehicle(id, { registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost, photo }) {
+async function updateVehicle(
+    id,
+    { registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost, photo, currentLocationCity }
+) {
     const result = await pool.query(
         `UPDATE vehicles
          SET registration_number = $1, model = $2, type = $3, max_load_kg = $4,
-             odometer_km = $5, acquisition_cost = $6, photo = $7, updated_at = now()
-         WHERE id = $8
+             odometer_km = $5, acquisition_cost = $6, photo = $7, current_location_city = $8, updated_at = now()
+         WHERE id = $9
          RETURNING *`,
-        [registrationNumber, model, type, maxLoadKg, odometerKm, acquisitionCost ?? null, photo ?? null, id]
+        [
+            registrationNumber,
+            model,
+            type,
+            maxLoadKg,
+            odometerKm,
+            acquisitionCost ?? null,
+            photo ?? null,
+            currentLocationCity ?? null,
+            id,
+        ]
     );
     return result.rows[0];
 }
@@ -64,6 +95,14 @@ async function setVehicleOdometer(id, odometerKm, client = pool) {
     return result.rows[0];
 }
 
+async function setVehicleLocation(id, city, client = pool) {
+    const result = await client.query(
+        `UPDATE vehicles SET current_location_city = $1, updated_at = now() WHERE id = $2 RETURNING *`,
+        [city, id]
+    );
+    return result.rows[0];
+}
+
 module.exports = {
     listVehicles,
     findVehicleById,
@@ -71,4 +110,5 @@ module.exports = {
     updateVehicle,
     setVehicleStatus,
     setVehicleOdometer,
+    setVehicleLocation,
 };

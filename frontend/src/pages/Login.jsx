@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Truck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
@@ -35,10 +35,10 @@ export default function Login() {
     return (
         <div className="flex min-h-screen">
             <div className="hazard-stripe relative hidden w-[45%] flex-col justify-between overflow-hidden bg-coal-950 p-10 lg:flex">
-                <div className="animate-fade-in-up flex items-center gap-2">
+                <Link to="/" aria-label="Return to home" className="focus-volt animate-fade-in-up flex w-fit items-center gap-2 rounded-md transition hover:text-volt-400">
                     <span className="h-2 w-2 bg-volt-400" />
                     <span className="font-display text-lg font-semibold tracking-wide text-smoke-100">TRANSITOPS</span>
-                </div>
+                </Link>
 
                 <div className="animate-fade-in-up flex flex-col items-start gap-6" style={{ animationDelay: '100ms' }}>
                     <Truck size={120} strokeWidth={1} className="text-volt-400" />
@@ -62,7 +62,7 @@ export default function Login() {
                 </p>
             </div>
 
-            <div className="flex flex-1 items-center justify-center bg-coal-950 p-4 sm:p-6">
+            <div className="page-boundary flex flex-1 items-center justify-center bg-coal-950 py-6">
                 <form
                     onSubmit={handleSubmit}
                     className={`animate-fade-in-up w-full max-w-sm rounded-lg border border-coal-600 bg-coal-900 p-5 sm:p-8 ${

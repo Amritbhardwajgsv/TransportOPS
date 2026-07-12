@@ -13,6 +13,7 @@ import Trips from './pages/Trips';
 import Maintenance from './pages/Maintenance';
 import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
+import ThemeToggle from './components/ThemeToggle';
 
 function roleRoles(path) {
     return NAV_ITEMS.find((item) => item.to === path).roles;
@@ -117,6 +118,7 @@ function App() {
         <BrowserRouter>
             <AuthProvider>
                 <ToastProvider>
+                    <ThemeToggle />
                     <AppRoutes />
                 </ToastProvider>
             </AuthProvider>

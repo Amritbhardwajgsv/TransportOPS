@@ -12,6 +12,7 @@ import StatusBadge from '../components/StatusBadge';
 import PhotoThumb from '../components/PhotoThumb';
 import EmptyState from '../components/EmptyState';
 import { fileToBase64 } from '../lib/fileToBase64';
+import { CITIES } from '../constants/cities';
 
 const VEHICLE_TYPES = ['truck', 'van', 'trailer', 'pickup'];
 const STATUS_FILTERS = ['available', 'on_trip', 'in_shop', 'retired'];
@@ -25,6 +26,7 @@ const emptyForm = {
     odometerKm: '',
     acquisitionCost: '',
     photo: null,
+    currentLocationCity: '',
 };
 
 export default function Vehicles() {
@@ -81,6 +83,7 @@ export default function Vehicles() {
             odometerKm: vehicle.odometer_km,
             acquisitionCost: vehicle.acquisition_cost ?? '',
             photo: vehicle.photo,
+            currentLocationCity: vehicle.current_location_city ?? '',
         });
         setFieldError({});
         setModalOpen(true);
@@ -114,6 +117,7 @@ export default function Vehicles() {
                 odometerKm: form.odometerKm === '' ? 0 : Number(form.odometerKm),
                 acquisitionCost: form.acquisitionCost === '' ? null : Number(form.acquisitionCost),
                 photo: form.photo,
+                currentLocationCity: form.currentLocationCity || null,
             };
             if (editing) {
                 await api.put(`/vehicles/${editing.id}`, payload);
@@ -161,6 +165,11 @@ export default function Vehicles() {
             header: 'Cost',
             align: 'right',
             render: (v) => (v.acquisition_cost ? `₹${Number(v.acquisition_cost).toLocaleString()}` : '—'),
+        },
+        {
+            key: 'current_location_city',
+            header: 'Location',
+            render: (v) => v.current_location_city ?? <span className="text-smoke-400">Unknown</span>,
         },
         { key: 'status', header: 'Status', render: (v) => <StatusBadge status={v.status} /> },
         ...(canManage
@@ -307,14 +316,29 @@ export default function Vehicles() {
                             />
                         </Field>
                     </div>
-                    <Field label="Acquisition cost (₹)">
-                        <Input
-                            type="number"
-                            min="0"
-                            value={form.acquisitionCost}
-                            onChange={(e) => setForm((f) => ({ ...f, acquisitionCost: e.target.value }))}
-                        />
-                    </Field>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <Field label="Acquisition cost (₹)">
+                            <Input
+                                type="number"
+                                min="0"
+                                value={form.acquisitionCost}
+                                onChange={(e) => setForm((f) => ({ ...f, acquisitionCost: e.target.value }))}
+                            />
+                        </Field>
+                        <Field label="Current location">
+                            <Select
+                                value={form.currentLocationCity}
+                                onChange={(e) => setForm((f) => ({ ...f, currentLocationCity: e.target.value }))}
+                            >
+                                <option value="">Unknown</option>
+                                {CITIES.map((c) => (
+                                    <option key={c.name} value={c.name}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                    </div>
                     <Field label="Photo (optional)" error={fieldError.photo}>
                         <input type="file" accept="image/*" onChange={handlePhotoChange} className="text-sm text-smoke-400" />
                         {form.photo && <img src={form.photo} alt="" className="mt-2 h-24 w-full rounded object-cover" />}
@@ -342,6 +366,8 @@ export default function Vehicles() {
                             <dd className="text-right font-mono">{Number(drawerVehicle.max_load_kg).toLocaleString()} kg</dd>
                             <dt className="text-smoke-400">Odometer</dt>
                             <dd className="text-right font-mono">{Number(drawerVehicle.odometer_km).toLocaleString()} km</dd>
+                            <dt className="text-smoke-400">Location</dt>
+                            <dd className="text-right">{drawerVehicle.current_location_city ?? 'Unknown'}</dd>
                             <dt className="text-smoke-400">Acquisition cost</dt>
                             <dd className="text-right font-mono">
                                 {drawerVehicle.acquisition_cost

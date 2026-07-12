@@ -5,18 +5,18 @@ async function seed() {
     await pool.query('TRUNCATE trips, maintenance_records, fuel_logs, expenses, drivers, vehicles RESTART IDENTITY CASCADE');
 
     const vehicles = [
-        ['MH12AB1234', 'Tata 1109', 'truck', 5000, 12400, 1500000, 'available'],
-        ['MH14XY5566', 'Eicher Pro 2049', 'truck', 4000, 8200, 1800000, 'available'],
-        ['KA05MZ9988', 'Ashok Leyland Dost', 'van', 1500, 21000, 900000, 'available'],
-        ['MH20CD4321', 'Mahindra Bolero Pickup', 'pickup', 1000, 34500, 700000, 'in_shop'],
-        ['MH01EF7788', 'Tata Ace', 'van', 750, 5400, 550000, 'available'],
+        ['MH12AB1234', 'Tata 1109', 'truck', 5000, 12400, 1500000, 'available', 'Mumbai'],
+        ['MH14XY5566', 'Eicher Pro 2049', 'truck', 4000, 8200, 1800000, 'available', 'Nashik'],
+        ['KA05MZ9988', 'Ashok Leyland Dost', 'van', 1500, 21000, 900000, 'available', 'Pune'],
+        ['MH20CD4321', 'Mahindra Bolero Pickup', 'pickup', 1000, 34500, 700000, 'in_shop', 'Pune'],
+        ['MH01EF7788', 'Tata Ace', 'van', 750, 5400, 550000, 'available', 'Nashik'],
     ];
     const vehicleIds = {};
-    for (const [reg, model, type, maxLoad, odometer, cost, status] of vehicles) {
+    for (const [reg, model, type, maxLoad, odometer, cost, status, city] of vehicles) {
         const res = await pool.query(
-            `INSERT INTO vehicles (registration_number, model, type, max_load_kg, odometer_km, acquisition_cost, status)
-             VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-            [reg, model, type, maxLoad, odometer, cost, status]
+            `INSERT INTO vehicles (registration_number, model, type, max_load_kg, odometer_km, acquisition_cost, status, current_location_city)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+            [reg, model, type, maxLoad, odometer, cost, status, city]
         );
         vehicleIds[reg] = res.rows[0].id;
     }
