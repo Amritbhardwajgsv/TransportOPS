@@ -64,4 +64,21 @@ async function setDriverStatus(id, status, client = pool) {
     return result.rows[0];
 }
 
-module.exports = { listDrivers, findDriverById, createDriver, updateDriver, setDriverStatus };
+async function listExpiringLicenses(daysAhead = 30) {
+    const result = await pool.query(
+        `SELECT ${SELECT_COLUMNS} FROM drivers
+         WHERE license_expiry < CURRENT_DATE + ($1 || ' days')::interval
+         ORDER BY license_expiry ASC`,
+        [daysAhead]
+    );
+    return result.rows;
+}
+
+module.exports = {
+    listDrivers,
+    findDriverById,
+    createDriver,
+    updateDriver,
+    setDriverStatus,
+    listExpiringLicenses,
+};

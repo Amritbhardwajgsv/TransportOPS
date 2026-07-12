@@ -23,4 +23,12 @@ async function findUserById(id) {
     return result.rows[0];
 }
 
-module.exports = { createUser, findUserByEmail, findUserById };
+async function findUsersByRole(role) {
+    const result = await pool.query(
+        'SELECT id, name, email, role, created_at FROM users WHERE role = $1',
+        [role]
+    );
+    return result.rows;
+}
+
+module.exports = { createUser, findUserByEmail, findUserById, findUsersByRole };
