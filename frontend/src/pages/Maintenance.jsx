@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Wrench } from 'lucide-react';
+import { Plus, Wrench, Search } from 'lucide-react';
 import api from '../lib/api';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/Button';
@@ -9,11 +9,15 @@ import Field, { Input, Select, Textarea } from '../components/Field';
 import StatusBadge from '../components/StatusBadge';
 import EmptyState from '../components/EmptyState';
 
+const STATUS_FILTERS = ['open', 'closed'];
+
 export default function Maintenance() {
     const { showToast } = useToast();
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
     const [vehicles, setVehicles] = useState([]);
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
 
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState({ vehicleId: '', description: '', cost: '' });
@@ -23,7 +27,9 @@ export default function Maintenance() {
     async function load() {
         setLoading(true);
         try {
-            const res = await api.get('/maintenance');
+            const params = {};
+            if (statusFilter) params.status = statusFilter;
+            const res = await api.get('/maintenance', { params });
             setRecords(res.data.records);
         } finally {
             setLoading(false);
@@ -32,7 +38,8 @@ export default function Maintenance() {
 
     useEffect(() => {
         load();
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [statusFilter]);
 
     async function openCreate() {
         setForm({ vehicleId: '', description: '', cost: '' });
@@ -76,15 +83,37 @@ export default function Maintenance() {
         }
     }
 
+    const filteredRecords = search
+        ? records.filter((r) =>
+              `${r.vehicle_registration} ${r.description}`.toLowerCase().includes(search.toLowerCase())
+          )
+        : records;
+
     const columns = [
-        { key: 'vehicle_registration', header: 'Vehicle', render: (r) => <span className="font-mono font-semibold">{r.vehicle_registration}</span> },
+        {
+            key: 'vehicle_registration',
+            header: 'Vehicle',
+            render: (r) => <span className="font-mono font-semibold">{r.vehicle_registration}</span>,
+        },
         { key: 'description', header: 'Description' },
-        { key: 'cost', header: 'Cost', align: 'right', render: (r) => (r.cost ? `₹${Number(r.cost).toLocaleString()}` : '—') },
-        { key: 'opened_at', header: 'Opened', render: (r) => new Date(r.opened_at).toLocaleDateString() },
+        {
+            key: 'cost',
+            header: 'Cost',
+            align: 'right',
+            sortValue: (r) => Number(r.cost ?? 0),
+            render: (r) => (r.cost ? `₹${Number(r.cost).toLocaleString()}` : '—'),
+        },
+        {
+            key: 'opened_at',
+            header: 'Opened',
+            sortValue: (r) => new Date(r.opened_at).getTime(),
+            render: (r) => new Date(r.opened_at).toLocaleDateString(),
+        },
         { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
         {
             key: 'actions',
             header: '',
+            sortable: false,
             render: (r) =>
                 r.status === 'open' ? (
                     <Button variant="ghost" className="h-8 px-3 text-xs" onClick={() => handleClose(r)}>
@@ -110,10 +139,35 @@ export default function Maintenance() {
                 </Button>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+                <div className="relative w-full sm:w-64">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-smoke-400" />
+                    <input
+                        className="focus-volt h-10 w-full rounded-lg border border-coal-600 bg-coal-800 pl-9 pr-3 text-sm text-smoke-100 placeholder:text-smoke-400"
+                        placeholder="Search vehicle or description…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+                {STATUS_FILTERS.map((s) => (
+                    <button
+                        key={s}
+                        onClick={() => setStatusFilter(statusFilter === s ? '' : s)}
+                        className={`focus-volt rounded-full border px-3 py-1 text-xs capitalize transition ${
+                            statusFilter === s
+                                ? 'border-volt-400 text-volt-400'
+                                : 'border-coal-600 text-smoke-400 hover:text-smoke-100'
+                        }`}
+                    >
+                        {s}
+                    </button>
+                ))}
+            </div>
+
+            <div className="mt-4">
                 <DataTable
                     columns={columns}
-                    rows={records}
+                    rows={filteredRecords}
                     loading={loading}
                     empty={<EmptyState icon={Wrench} title="No maintenance records yet" description="Log a record when a vehicle needs servicing." />}
                 />

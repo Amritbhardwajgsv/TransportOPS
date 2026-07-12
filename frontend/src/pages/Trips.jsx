@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Route, Send, CheckCircle2, XCircle } from 'lucide-react';
+import { Route, Send, CheckCircle2, XCircle, Search } from 'lucide-react';
 import api from '../lib/api';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/Button';
@@ -30,6 +30,7 @@ export default function Trips() {
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('');
+    const [search, setSearch] = useState('');
 
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState(emptyForm);
@@ -73,6 +74,13 @@ export default function Trips() {
         setAvailableVehicles(vehiclesRes.data.vehicles);
         setAvailableDrivers(driversRes.data.drivers);
     }
+
+    const filteredTrips = search
+        ? trips.filter((t) => {
+              const haystack = `${t.trip_number} ${t.source} ${t.destination} ${t.vehicle_registration} ${t.driver_name}`.toLowerCase();
+              return haystack.includes(search.toLowerCase());
+          })
+        : trips;
 
     const selectedVehicle = availableVehicles.find((v) => v.id === form.vehicleId);
     const cargoExceedsCapacity =
@@ -186,15 +194,27 @@ export default function Trips() {
     }
 
     const columns = [
-        { key: 'trip_number', header: 'Trip', render: (t) => <span className="font-mono font-semibold">{t.trip_number}</span> },
-        { key: 'route', header: 'Route', render: (t) => `${t.source} → ${t.destination}` },
+        {
+            key: 'trip_number',
+            header: 'Trip',
+            sortValue: (t) => t.seq,
+            render: (t) => <span className="font-mono font-semibold">{t.trip_number}</span>,
+        },
+        { key: 'route', header: 'Route', sortValue: (t) => t.source, render: (t) => `${t.source} → ${t.destination}` },
         {
             key: 'vehicle',
             header: 'Vehicle',
+            sortValue: (t) => t.vehicle_registration,
             render: (t) => <span className="font-mono">{t.vehicle_registration}</span>,
         },
         { key: 'driver_name', header: 'Driver' },
-        { key: 'cargo_weight_kg', header: 'Cargo', align: 'right', render: (t) => `${Number(t.cargo_weight_kg).toLocaleString()} kg` },
+        {
+            key: 'cargo_weight_kg',
+            header: 'Cargo',
+            align: 'right',
+            sortValue: (t) => Number(t.cargo_weight_kg),
+            render: (t) => `${Number(t.cargo_weight_kg).toLocaleString()} kg`,
+        },
         { key: 'status', header: 'Status', render: (t) => <StatusBadge status={t.status} /> },
         {
             key: 'actions',
@@ -247,6 +267,15 @@ export default function Trips() {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
+                <div className="relative w-full sm:w-64">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-smoke-400" />
+                    <input
+                        className="focus-volt h-10 w-full rounded-lg border border-coal-600 bg-coal-800 pl-9 pr-3 text-sm text-smoke-100 placeholder:text-smoke-400"
+                        placeholder="Search trip, route, vehicle or driver…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
                 {STATUS_FILTERS.map((s) => (
                     <button
                         key={s}
@@ -265,7 +294,7 @@ export default function Trips() {
             <div className="mt-4">
                 <DataTable
                     columns={columns}
-                    rows={trips}
+                    rows={filteredTrips}
                     loading={loading}
                     empty={<EmptyState icon={Route} title="No trips yet" description="Create a trip to get the fleet moving." />}
                 />

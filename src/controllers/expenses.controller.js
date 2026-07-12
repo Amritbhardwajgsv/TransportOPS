@@ -3,8 +3,8 @@ const expenseModel = require('../models/expense.model');
 const CATEGORIES = ['toll', 'parking', 'permit', 'insurance', 'fine', 'other'];
 
 async function list(req, res) {
-    const { vehicleId, limit } = req.query;
-    const expenses = await expenseModel.listExpenses({ vehicleId, limit });
+    const { vehicleId, category, limit } = req.query;
+    const expenses = await expenseModel.listExpenses({ vehicleId, category, limit });
     return res.status(200).json({ expenses });
 }
 

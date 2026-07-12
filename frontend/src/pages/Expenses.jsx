@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Fuel, Receipt } from 'lucide-react';
+import { Plus, Fuel, Receipt, Search } from 'lucide-react';
 import api from '../lib/api';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/Button';
@@ -14,6 +14,8 @@ export default function Expenses() {
     const { showToast } = useToast();
     const [tab, setTab] = useState('fuel');
     const [vehicles, setVehicles] = useState([]);
+    const [search, setSearch] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
 
     const [fuelLogs, setFuelLogs] = useState([]);
     const [fuelLoading, setFuelLoading] = useState(true);
@@ -32,7 +34,7 @@ export default function Expenses() {
     async function loadFuel() {
         setFuelLoading(true);
         try {
-            const res = await api.get('/fuel-logs', { params: { limit: 20 } });
+            const res = await api.get('/fuel-logs', { params: { limit: 100 } });
             setFuelLogs(res.data.logs);
         } finally {
             setFuelLoading(false);
@@ -42,7 +44,9 @@ export default function Expenses() {
     async function loadExpenses() {
         setExpensesLoading(true);
         try {
-            const res = await api.get('/expenses', { params: { limit: 20 } });
+            const params = { limit: 100 };
+            if (categoryFilter) params.category = categoryFilter;
+            const res = await api.get('/expenses', { params });
             setExpenses(res.data.expenses);
         } finally {
             setExpensesLoading(false);
@@ -56,9 +60,13 @@ export default function Expenses() {
 
     useEffect(() => {
         loadFuel();
-        loadExpenses();
         loadVehicles();
     }, []);
+
+    useEffect(() => {
+        loadExpenses();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [categoryFilter]);
 
     async function handleFuelSubmit(e) {
         e.preventDefault();
@@ -112,20 +120,53 @@ export default function Expenses() {
         }
     }
 
+    const filteredFuelLogs = search
+        ? fuelLogs.filter((l) => l.vehicle_registration.toLowerCase().includes(search.toLowerCase()))
+        : fuelLogs;
+    const filteredExpenses = search
+        ? expenses.filter((e) =>
+              `${e.vehicle_registration ?? ''} ${e.description ?? ''} ${e.category}`.toLowerCase().includes(search.toLowerCase())
+          )
+        : expenses;
+
     const fuelColumns = [
-        { key: 'vehicle_registration', header: 'Vehicle', render: (l) => <span className="font-mono">{l.vehicle_registration}</span> },
-        { key: 'liters', header: 'Liters', align: 'right', render: (l) => Number(l.liters).toLocaleString() },
-        { key: 'cost', header: 'Cost', align: 'right', render: (l) => `₹${Number(l.cost).toLocaleString()}` },
-        { key: 'odometer_km', header: 'Odometer', align: 'right', render: (l) => (l.odometer_km ? `${Number(l.odometer_km).toLocaleString()} km` : '—') },
-        { key: 'logged_at', header: 'Date', render: (l) => new Date(l.logged_at).toLocaleDateString() },
+        {
+            key: 'vehicle_registration',
+            header: 'Vehicle',
+            render: (l) => <span className="font-mono">{l.vehicle_registration}</span>,
+        },
+        { key: 'liters', header: 'Liters', align: 'right', sortValue: (l) => Number(l.liters), render: (l) => Number(l.liters).toLocaleString() },
+        { key: 'cost', header: 'Cost', align: 'right', sortValue: (l) => Number(l.cost), render: (l) => `₹${Number(l.cost).toLocaleString()}` },
+        {
+            key: 'odometer_km',
+            header: 'Odometer',
+            align: 'right',
+            sortValue: (l) => Number(l.odometer_km ?? 0),
+            render: (l) => (l.odometer_km ? `${Number(l.odometer_km).toLocaleString()} km` : '—'),
+        },
+        {
+            key: 'logged_at',
+            header: 'Date',
+            sortValue: (l) => new Date(l.logged_at).getTime(),
+            render: (l) => new Date(l.logged_at).toLocaleDateString(),
+        },
     ];
 
     const expenseColumns = [
         { key: 'category', header: 'Category', render: (e) => <span className="capitalize">{e.category}</span> },
-        { key: 'vehicle_registration', header: 'Vehicle', render: (e) => (e.vehicle_registration ? <span className="font-mono">{e.vehicle_registration}</span> : '—') },
+        {
+            key: 'vehicle_registration',
+            header: 'Vehicle',
+            render: (e) => (e.vehicle_registration ? <span className="font-mono">{e.vehicle_registration}</span> : '—'),
+        },
         { key: 'description', header: 'Description', render: (e) => e.description ?? '—' },
-        { key: 'cost', header: 'Cost', align: 'right', render: (e) => `₹${Number(e.cost).toLocaleString()}` },
-        { key: 'logged_at', header: 'Date', render: (e) => new Date(e.logged_at).toLocaleDateString() },
+        { key: 'cost', header: 'Cost', align: 'right', sortValue: (e) => Number(e.cost), render: (e) => `₹${Number(e.cost).toLocaleString()}` },
+        {
+            key: 'logged_at',
+            header: 'Date',
+            sortValue: (e) => new Date(e.logged_at).getTime(),
+            render: (e) => new Date(e.logged_at).toLocaleDateString(),
+        },
     ];
 
     return (
@@ -159,18 +200,44 @@ export default function Expenses() {
                 </button>
             </div>
 
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="relative w-full sm:w-64">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-smoke-400" />
+                    <input
+                        className="focus-volt h-10 w-full rounded-lg border border-coal-600 bg-coal-800 pl-9 pr-3 text-sm text-smoke-100 placeholder:text-smoke-400"
+                        placeholder={tab === 'fuel' ? 'Search vehicle…' : 'Search vehicle, description or category…'}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+                {tab === 'expenses' &&
+                    EXPENSE_CATEGORIES.map((c) => (
+                        <button
+                            key={c}
+                            onClick={() => setCategoryFilter(categoryFilter === c ? '' : c)}
+                            className={`focus-volt rounded-full border px-3 py-1 text-xs capitalize transition ${
+                                categoryFilter === c
+                                    ? 'border-volt-400 text-volt-400'
+                                    : 'border-coal-600 text-smoke-400 hover:text-smoke-100'
+                            }`}
+                        >
+                            {c}
+                        </button>
+                    ))}
+            </div>
+
             <div className="mt-4">
                 {tab === 'fuel' ? (
                     <DataTable
                         columns={fuelColumns}
-                        rows={fuelLogs}
+                        rows={filteredFuelLogs}
                         loading={fuelLoading}
                         empty={<EmptyState icon={Fuel} title="No fuel logs yet" description="Log fuel purchases to track efficiency." />}
                     />
                 ) : (
                     <DataTable
                         columns={expenseColumns}
-                        rows={expenses}
+                        rows={filteredExpenses}
                         loading={expensesLoading}
                         empty={<EmptyState icon={Receipt} title="No expenses yet" description="Add tolls, permits, fines and other costs here." />}
                     />

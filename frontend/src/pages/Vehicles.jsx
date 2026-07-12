@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Truck, Search } from 'lucide-react';
+import { Plus, Truck, Search, FileText, Download, Trash2, Upload } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -18,6 +18,8 @@ import { useCities } from '../hooks/useCities';
 const VEHICLE_TYPES = ['truck', 'van', 'trailer', 'pickup'];
 const STATUS_FILTERS = ['available', 'on_trip', 'in_shop', 'retired'];
 const MAX_PHOTO_BYTES = 250000;
+const DOCUMENT_TYPES = ['RC', 'Insurance', 'PUC', 'Permit', 'Other'];
+const MAX_DOCUMENT_BYTES = 1500000;
 
 const emptyForm = {
     registrationNumber: '',
@@ -29,6 +31,12 @@ const emptyForm = {
     photo: null,
     currentLocationCity: '',
 };
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function Vehicles() {
     const { user } = useAuth();
@@ -50,6 +58,13 @@ export default function Vehicles() {
     const [drawerVehicle, setDrawerVehicle] = useState(null);
     const [confirmAction, setConfirmAction] = useState(null);
 
+    const [documents, setDocuments] = useState([]);
+    const [documentsLoading, setDocumentsLoading] = useState(false);
+    const [docForm, setDocForm] = useState({ docType: 'RC', file: null, fileName: '' });
+    const [docError, setDocError] = useState('');
+    const [docUploading, setDocUploading] = useState(false);
+    const [docToDelete, setDocToDelete] = useState(null);
+
     async function load() {
         setLoading(true);
         try {
@@ -68,6 +83,26 @@ export default function Vehicles() {
         return () => clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, statusFilter]);
+
+    async function loadDocuments(vehicleId) {
+        setDocumentsLoading(true);
+        try {
+            const res = await api.get('/vehicle-documents', { params: { vehicleId } });
+            setDocuments(res.data.documents);
+        } finally {
+            setDocumentsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        if (drawerVehicle) {
+            setDocForm({ docType: 'RC', file: null, fileName: '' });
+            setDocError('');
+            loadDocuments(drawerVehicle.id);
+        } else {
+            setDocuments([]);
+        }
+    }, [drawerVehicle]);
 
     function openCreate() {
         setEditing(null);
@@ -158,8 +193,65 @@ export default function Vehicles() {
         }
     }
 
+    async function handleDocFileChange(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > MAX_DOCUMENT_BYTES) {
+            setDocError('File must be under ~1.5MB');
+            return;
+        }
+        const base64 = await fileToBase64(file);
+        setDocForm((f) => ({ ...f, file: base64, fileName: file.name, mimeType: file.type || 'application/octet-stream' }));
+        setDocError('');
+    }
+
+    async function handleUploadDocument() {
+        if (!docForm.file) {
+            setDocError('Choose a file to upload');
+            return;
+        }
+        setDocUploading(true);
+        setDocError('');
+        try {
+            await api.post('/vehicle-documents', {
+                vehicleId: drawerVehicle.id,
+                docType: docForm.docType,
+                fileName: docForm.fileName,
+                mimeType: docForm.mimeType,
+                fileData: docForm.file,
+            });
+            showToast(`${docForm.docType} uploaded for ${drawerVehicle.registration_number}`, 'success');
+            setDocForm({ docType: 'RC', file: null, fileName: '' });
+            loadDocuments(drawerVehicle.id);
+        } catch (err) {
+            setDocError(err.response?.data?.message ?? 'Something went wrong');
+        } finally {
+            setDocUploading(false);
+        }
+    }
+
+    async function handleViewDocument(doc) {
+        const res = await api.get(`/vehicle-documents/${doc.id}/file`);
+        const a = document.createElement('a');
+        a.href = res.data.fileData;
+        a.download = res.data.fileName;
+        a.target = '_blank';
+        a.click();
+    }
+
+    async function handleDeleteDocument() {
+        try {
+            await api.delete(`/vehicle-documents/${docToDelete.id}`);
+            showToast(`${docToDelete.file_name} deleted`, 'success');
+            setDocToDelete(null);
+            loadDocuments(drawerVehicle.id);
+        } catch (err) {
+            showToast(err.response?.data?.message ?? 'Something went wrong', 'error');
+        }
+    }
+
     const columns = [
-        { key: 'photo', header: '', render: (v) => <PhotoThumb photo={v.photo} /> },
+        { key: 'photo', header: '', sortable: false, render: (v) => <PhotoThumb photo={v.photo} /> },
         {
             key: 'registration_number',
             header: 'Reg',
@@ -171,18 +263,21 @@ export default function Vehicles() {
             key: 'max_load_kg',
             header: 'Max load',
             align: 'right',
+            sortValue: (v) => Number(v.max_load_kg),
             render: (v) => `${Number(v.max_load_kg).toLocaleString()} kg`,
         },
         {
             key: 'odometer_km',
             header: 'Odometer',
             align: 'right',
+            sortValue: (v) => Number(v.odometer_km),
             render: (v) => `${Number(v.odometer_km).toLocaleString()} km`,
         },
         {
             key: 'acquisition_cost',
             header: 'Cost',
             align: 'right',
+            sortValue: (v) => Number(v.acquisition_cost ?? 0),
             render: (v) => (v.acquisition_cost ? `₹${Number(v.acquisition_cost).toLocaleString()}` : '—'),
         },
         {
@@ -196,6 +291,7 @@ export default function Vehicles() {
                   {
                       key: 'actions',
                       header: '',
+                      sortable: false,
                       render: (v) => (
                           <Button
                               variant="ghost"
@@ -418,6 +514,91 @@ export default function Vehicles() {
                                 )}
                             </div>
                         )}
+
+                        <div className="border-t border-coal-600 pt-4">
+                            <h3 className="mb-1 flex items-center gap-2 text-sm font-semibold text-smoke-100">
+                                <FileText size={16} /> Documents
+                            </h3>
+                            <p className="mb-3 text-xs text-smoke-400">RC, insurance, PUC, and permit scans for this vehicle.</p>
+
+                            {documentsLoading ? (
+                                <div className="space-y-2">
+                                    {[0, 1].map((i) => (
+                                        <div key={i} className="h-12 animate-pulse rounded-lg bg-coal-800" />
+                                    ))}
+                                </div>
+                            ) : documents.length === 0 ? (
+                                <p className="rounded-lg border border-dashed border-coal-600 py-4 text-center text-xs text-smoke-400">
+                                    No documents uploaded yet
+                                </p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {documents.map((doc) => (
+                                        <div
+                                            key={doc.id}
+                                            className="flex items-center justify-between gap-2 rounded-lg border border-coal-600 bg-coal-900 px-3 py-2"
+                                        >
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm text-smoke-100">
+                                                    <span className="text-volt-400">{doc.doc_type}</span> · {doc.file_name}
+                                                </p>
+                                                <p className="text-xs text-smoke-400">
+                                                    {formatFileSize(doc.file_size)} · {new Date(doc.uploaded_at).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleViewDocument(doc)}
+                                                className="focus-volt shrink-0 rounded p-1.5 text-smoke-400 hover:bg-coal-800 hover:text-volt-400"
+                                                title="Download"
+                                            >
+                                                <Download size={15} />
+                                            </button>
+                                            {canManage && (
+                                                <button
+                                                    onClick={() => setDocToDelete(doc)}
+                                                    className="focus-volt shrink-0 rounded p-1.5 text-smoke-400 hover:bg-coal-800 hover:text-status-danger"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {canManage && (
+                                <div className="mt-3 space-y-2 rounded-lg border border-coal-600 bg-coal-900 p-3">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Select
+                                            value={docForm.docType}
+                                            onChange={(e) => setDocForm((f) => ({ ...f, docType: e.target.value }))}
+                                        >
+                                            {DOCUMENT_TYPES.map((t) => (
+                                                <option key={t} value={t}>
+                                                    {t}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                        <input
+                                            type="file"
+                                            accept="application/pdf,image/*"
+                                            onChange={handleDocFileChange}
+                                            className="text-xs text-smoke-400"
+                                        />
+                                    </div>
+                                    {docError && <p className="text-xs text-status-danger">{docError}</p>}
+                                    <Button
+                                        variant="ghost"
+                                        className="h-8 w-full text-xs"
+                                        onClick={handleUploadDocument}
+                                        disabled={docUploading || !docForm.file}
+                                    >
+                                        <Upload size={13} /> {docUploading ? 'Uploading…' : 'Upload document'}
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </Drawer>
@@ -434,6 +615,16 @@ export default function Vehicles() {
                 }
                 confirmLabel={confirmAction?.type === 'retire' ? 'Retire' : 'Reinstate'}
                 variant={confirmAction?.type === 'retire' ? 'danger' : 'primary'}
+            />
+
+            <ConfirmDialog
+                open={!!docToDelete}
+                onClose={() => setDocToDelete(null)}
+                onConfirm={handleDeleteDocument}
+                title="Delete document"
+                description={`${docToDelete?.file_name ?? ''} will be permanently removed.`}
+                confirmLabel="Delete"
+                variant="danger"
             />
         </div>
     );

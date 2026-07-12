@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, TriangleAlert } from 'lucide-react';
+import { ShieldCheck, TriangleAlert, BarChart3 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useDashboardSummary } from '../../hooks/useDashboardSummary';
 import api from '../../lib/api';
 import RoleHeroHeader from '../../components/RoleHeroHeader';
@@ -26,12 +27,17 @@ export default function ComplianceWatch() {
 
     const validLicenses = data.drivers.total - data.drivers.expired;
 
+    const safetyScoreData = [...drivers]
+        .sort((a, b) => a.safety_score - b.safety_score)
+        .map((d) => ({ name: d.name, score: d.safety_score }));
+
     const columns = [
         { key: 'name', header: 'Name' },
         { key: 'license_number', header: 'License', render: (d) => <span className="font-mono">{d.license_number}</span> },
         {
             key: 'license_expiry',
             header: 'Expires',
+            sortValue: (d) => new Date(d.license_expiry).getTime(),
             render: (d) => (
                 <span
                     className={`font-mono ${
@@ -74,6 +80,30 @@ export default function ComplianceWatch() {
             </div>
 
             <RuleCallout>Drivers with expired licenses or Suspended status never appear in dispatch.</RuleCallout>
+
+            <div>
+                <h2 className="font-display text-lg font-semibold text-smoke-100">Safety score by driver</h2>
+                <p className="mb-3 mt-1 text-sm text-smoke-400">Sorted lowest first — red bars are below the 50 safety threshold.</p>
+                {safetyScoreData.length === 0 ? (
+                    <EmptyState icon={BarChart3} title="No drivers yet" />
+                ) : (
+                    <div className="h-64 rounded-lg border border-coal-600 bg-coal-900 p-2 sm:p-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={safetyScoreData} layout="vertical" margin={{ left: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" horizontal={false} />
+                                <XAxis type="number" domain={[0, 100]} stroke="#a8a29e" fontSize={12} />
+                                <YAxis type="category" dataKey="name" stroke="#a8a29e" fontSize={12} width={100} />
+                                <Tooltip contentStyle={{ background: '#242424', border: '1px solid #3a3a3a', borderRadius: 8, color: '#edeae6' }} />
+                                <Bar dataKey="score" name="Safety score" radius={[0, 4, 4, 0]}>
+                                    {safetyScoreData.map((entry) => (
+                                        <Cell key={entry.name} fill={entry.score < 50 ? '#f87171' : '#c6f432'} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+            </div>
 
             <div>
                 <h2 className="font-display text-lg font-semibold text-smoke-100">License radar</h2>

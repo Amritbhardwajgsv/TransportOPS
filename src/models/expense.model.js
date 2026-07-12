@@ -6,12 +6,16 @@ const SELECT_COLUMNS = `
 `;
 const BASE_JOIN = `FROM expenses e LEFT JOIN vehicles v ON v.id = e.vehicle_id`;
 
-async function listExpenses({ vehicleId, limit }) {
+async function listExpenses({ vehicleId, category, limit }) {
     const conditions = [];
     const params = [];
     if (vehicleId) {
         params.push(vehicleId);
         conditions.push(`e.vehicle_id = $${params.length}`);
+    }
+    if (category) {
+        params.push(category);
+        conditions.push(`e.category = $${params.length}`);
     }
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const limitClause = limit ? `LIMIT ${Number(limit)}` : '';

@@ -155,10 +155,15 @@ export default function Drivers() {
     }
 
     const columns = [
-        { key: 'photo', header: '', render: (d) => <Avatar photo={d.photo} name={d.name} /> },
+        { key: 'photo', header: '', sortable: false, render: (d) => <Avatar photo={d.photo} name={d.name} /> },
         { key: 'name', header: 'Name' },
         { key: 'license_number', header: 'License', render: (d) => <span className="font-mono">{d.license_number}</span> },
-        { key: 'license_expiry', header: 'Expires', render: (d) => <ExpiryLabel driver={d} /> },
+        {
+            key: 'license_expiry',
+            header: 'Expires',
+            sortValue: (d) => new Date(d.license_expiry).getTime(),
+            render: (d) => <ExpiryLabel driver={d} />,
+        },
         {
             key: 'safety_score',
             header: 'Safety score',
