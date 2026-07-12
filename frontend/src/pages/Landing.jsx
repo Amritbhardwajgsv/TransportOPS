@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, BarChart3, CheckCircle2, Clock3, Database, Gauge, MapPin, Navigation, ShieldCheck, Sparkles, Truck, Workflow } from 'lucide-react';
+import { ArrowRight, BarChart3, CheckCircle2, Clock3, Database, Eye, Gauge, Link2, MapPin, Navigation, ShieldCheck, Sparkles, Truck, UsersRound, Workflow, Zap } from 'lucide-react';
 import TypewriterText from '../components/TypewriterText';
 import Button from '../components/Button';
 import { PUBLIC_ROLES } from '../lib/roleConfig';
@@ -84,6 +84,43 @@ export default function Landing() {
                                 <p className="mt-3 text-sm leading-6 text-smoke-400">{text}</p>
                             </article>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+            <section className="page-boundary pb-20 sm:pb-28">
+                <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl border border-coal-600 bg-coal-900">
+                    <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
+                        <div className="relative flex flex-col justify-between overflow-hidden border-b border-coal-600 p-7 sm:p-10 lg:border-r lg:border-b-0">
+                            <div className="absolute -top-24 -left-24 h-56 w-56 rounded-full bg-volt-400/10 blur-3xl" />
+                            <div className="relative">
+                                <p className="text-xs uppercase tracking-[0.22em] text-volt-400">Why we are different</p>
+                                <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-smoke-100 sm:text-5xl">
+                                    Most software records what happened.
+                                    <span className="mt-2 block text-volt-400">TransitOps shapes what happens next.</span>
+                                </h2>
+                                <p className="mt-6 max-w-xl text-sm leading-7 text-smoke-400">
+                                    We do not give every person the same crowded screen and call it visibility. Each role gets the context to decide, while the platform keeps every decision connected.
+                                </p>
+                            </div>
+                            <div className="relative mt-10 flex items-center gap-3 text-sm text-smoke-100"><span className="h-px w-10 bg-volt-400" /> Less chasing. Fewer assumptions. Better movement.</div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2">
+                            {[
+                                { icon: Eye, kicker: 'Clarity over clutter', title: 'See the decision, not just the data.', text: 'Dashboards surface the few signals that need attention instead of burying teams under endless fields and charts.' },
+                                { icon: Link2, kicker: 'Connected by default', title: 'One action updates the whole operation.', text: 'Dispatch, availability, compliance, and cost stay connected—without teams reconciling separate spreadsheets later.' },
+                                { icon: Zap, kicker: 'Action over observation', title: 'Warnings lead somewhere useful.', text: 'An expired license, stale trip, or expensive vehicle appears beside the workflow that can resolve it.' },
+                                { icon: UsersRound, kicker: 'Built around people', title: 'Every role gets its own command center.', text: 'Managers, drivers, safety teams, and analysts work from focused views while sharing the same operational truth.' },
+                            ].map(({ icon: Icon, kicker, title, text }, index) => (
+                                <article key={title} className={`group p-6 transition duration-300 hover:bg-coal-800 sm:p-8 ${index < 2 ? 'border-b border-coal-600' : ''} ${index % 2 === 0 ? 'sm:border-r sm:border-coal-600' : ''}`}>
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-coal-600 bg-coal-950 text-volt-400 transition duration-300 group-hover:-translate-y-1 group-hover:border-volt-400"><Icon size={19} /></span>
+                                    <p className="mt-6 text-[11px] uppercase tracking-[0.18em] text-volt-400">{kicker}</p>
+                                    <h3 className="mt-2 font-display text-xl font-semibold text-smoke-100">{title}</h3>
+                                    <p className="mt-3 text-sm leading-6 text-smoke-400">{text}</p>
+                                </article>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </section>

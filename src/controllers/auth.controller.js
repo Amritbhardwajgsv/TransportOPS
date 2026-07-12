@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const userModel = require('../models/user.model');
 const { signAccessToken, verifyAccessToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
-const { ROLES } = require('../constants/roles');
+const roleModel = require('../models/role.model');
 
 const SALT_ROUNDS = 10;
 const COOKIE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -17,8 +17,10 @@ async function register(req, res) {
         if (password.length < 6) {
             return res.status(400).json({ message: 'password must be at least 6 characters' });
         }
-        if (!ROLES.includes(role)) {
-            return res.status(400).json({ message: `role must be one of: ${ROLES.join(', ')}` });
+        const validRole = await roleModel.findRoleByName(role);
+        if (!validRole) {
+            const roles = await roleModel.listRoles();
+            return res.status(400).json({ message: `role must be one of: ${roles.map((r) => r.name).join(', ')}` });
         }
 
         const normalizedEmail = email.toLowerCase().trim();
