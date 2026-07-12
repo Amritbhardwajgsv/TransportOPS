@@ -77,6 +77,9 @@ async function seed() {
          VALUES ($1, 'Oil change and filter service', 2100, 'closed', now() - interval '10 days', now() - interval '9 days')`,
         [vehicleIds['MH12AB1234']]
     );
+    await pool.query(`UPDATE vehicles SET last_service_odometer_km = odometer_km WHERE id = $1`, [
+        vehicleIds['MH12AB1234'],
+    ]);
 
     const fuelLogs = [
         ['MH12AB1234', 40, 3600, 12150],
