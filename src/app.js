@@ -4,11 +4,18 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/auth.routes');
 const healthRoutes = require('./routes/health.routes');
+const vehiclesRoutes = require('./routes/vehicles.routes');
+const driversRoutes = require('./routes/drivers.routes');
+const tripsRoutes = require('./routes/trips.routes');
+const maintenanceRoutes = require('./routes/maintenance.routes');
+const fuelRoutes = require('./routes/fuel.routes');
+const expensesRoutes = require('./routes/expenses.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || true, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '3mb' }));
 app.use(cookieParser());
 
 app.get('/', (req, res) => {
@@ -17,6 +24,13 @@ app.get('/', (req, res) => {
 
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/vehicles', vehiclesRoutes);
+app.use('/api/drivers', driversRoutes);
+app.use('/api/trips', tripsRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/fuel-logs', fuelRoutes);
+app.use('/api/expenses', expensesRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });

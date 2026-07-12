@@ -1,1 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
+
+@theme {
+  --color-coal-950: #141414;
+  --color-coal-900: #1b1b1b;
+  --color-coal-800: #242424;
+  --color-coal-600: #3a3a3a;
+
+  --color-smoke-400: #a8a29e;
+  --color-smoke-100: #edeae6;
+
+  --color-volt-400: #c6f432;
+  --color-volt-950: #1a2005;
+
+  --color-status-available: #4ade80;
+  --color-status-ontrip: #c6f432;
+  --color-status-shop: #fb923c;
+  --color-status-draft: #e7b75f;
+  --color-status-completed: #4ade80;
+  --color-status-idle: #78716c;
+  --color-status-danger: #f87171;
+
+  --font-display: "Barlow Semi Condensed", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-coal-950 text-smoke-100 font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-volt-400 text-volt-950;
+  }
+
+  * {
+    @apply border-coal-600;
+  }
+}
+
+@layer utilities {
+  .hazard-stripe {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(198, 244, 50, 0.04),
+      rgba(198, 244, 50, 0.04) 10px,
+      transparent 10px,
+      transparent 20px
+    );
+  }
+
+  .focus-volt {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-volt-400 focus-visible:ring-offset-2 focus-visible:ring-offset-coal-950;
+  }
+}

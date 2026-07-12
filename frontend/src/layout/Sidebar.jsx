@@ -1,0 +1,57 @@
+import { NavLink } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
+import { NAV_ITEMS } from './navConfig';
+import { useAuth } from '../context/AuthContext';
+import Avatar from '../components/Avatar';
+import RoleBadge from '../components/RoleBadge';
+
+export default function Sidebar() {
+    const { user, logout } = useAuth();
+    const items = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
+
+    return (
+        <aside className="flex h-full w-58 shrink-0 flex-col border-r border-coal-600 bg-coal-900">
+            <div className="flex items-center gap-2 px-5 py-5">
+                <span className="h-2 w-2 bg-volt-400" />
+                <span className="font-display text-lg font-semibold tracking-wide">TRANSITOPS</span>
+            </div>
+
+            <nav className="flex-1 space-y-1 px-3">
+                {items.map(({ to, label, icon: Icon }) => (
+                    <NavLink
+                        key={to}
+                        to={to}
+                        end={to === '/'}
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 rounded-lg border-l-2 px-3 py-2 text-sm transition ${
+                                isActive
+                                    ? 'border-volt-400 bg-coal-800 text-volt-400'
+                                    : 'border-transparent text-smoke-400 hover:bg-coal-800 hover:text-smoke-100'
+                            }`
+                        }
+                    >
+                        <Icon size={18} strokeWidth={2} />
+                        {label}
+                    </NavLink>
+                ))}
+            </nav>
+
+            <div className="border-t border-coal-600 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                    <Avatar name={user.name} />
+                    <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm text-smoke-100">{user.name}</p>
+                        <RoleBadge role={user.role} />
+                    </div>
+                </div>
+                <button
+                    onClick={logout}
+                    className="focus-volt flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-smoke-400 hover:bg-coal-800 hover:text-smoke-100"
+                >
+                    <LogOut size={16} />
+                    Log out
+                </button>
+            </div>
+        </aside>
+    );
+}
