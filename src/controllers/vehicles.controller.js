@@ -103,4 +103,31 @@ async function update(req, res) {
     }
 }
 
-module.exports = { list, getOne, create, update, VEHICLE_TYPES };
+async function retire(req, res) {
+    const existing = await vehicleModel.findVehicleById(req.params.id);
+    if (!existing) {
+        return res.status(404).json({ message: 'Vehicle not found' });
+    }
+    if (existing.status === 'on_trip') {
+        return res.status(422).json({ message: 'Cannot retire a vehicle that is currently on a trip' });
+    }
+    if (existing.status === 'retired') {
+        return res.status(422).json({ message: 'Vehicle is already retired' });
+    }
+    const vehicle = await vehicleModel.setVehicleStatus(req.params.id, 'retired');
+    return res.status(200).json({ vehicle });
+}
+
+async function reinstate(req, res) {
+    const existing = await vehicleModel.findVehicleById(req.params.id);
+    if (!existing) {
+        return res.status(404).json({ message: 'Vehicle not found' });
+    }
+    if (existing.status !== 'retired') {
+        return res.status(422).json({ message: 'Vehicle is not retired' });
+    }
+    const vehicle = await vehicleModel.setVehicleStatus(req.params.id, 'available');
+    return res.status(200).json({ vehicle });
+}
+
+module.exports = { list, getOne, create, update, retire, reinstate, VEHICLE_TYPES };

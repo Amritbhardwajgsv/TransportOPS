@@ -7,6 +7,7 @@ import Button from '../components/Button';
 import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import Drawer from '../components/Drawer';
+import ConfirmDialog from '../components/ConfirmDialog';
 import Field, { Input, Select } from '../components/Field';
 import StatusBadge from '../components/StatusBadge';
 import PhotoThumb from '../components/PhotoThumb';
@@ -47,6 +48,7 @@ export default function Vehicles() {
     const [submitting, setSubmitting] = useState(false);
 
     const [drawerVehicle, setDrawerVehicle] = useState(null);
+    const [confirmAction, setConfirmAction] = useState(null);
 
     async function load() {
         setLoading(true);
@@ -137,6 +139,22 @@ export default function Vehicles() {
             }
         } finally {
             setSubmitting(false);
+        }
+    }
+
+    async function handleConfirmAction() {
+        const { vehicle, type } = confirmAction;
+        try {
+            await api.post(`/vehicles/${vehicle.id}/${type}`);
+            showToast(
+                type === 'retire' ? `${vehicle.registration_number} retired` : `${vehicle.registration_number} reinstated`,
+                'success'
+            );
+            setConfirmAction(null);
+            setDrawerVehicle(null);
+            load();
+        } catch (err) {
+            showToast(err.response?.data?.message ?? 'Something went wrong', 'error');
         }
     }
 
@@ -376,9 +394,47 @@ export default function Vehicles() {
                                     : '—'}
                             </dd>
                         </dl>
+                        {canManage && (
+                            <div className="flex gap-2">
+                                <Button variant="ghost" className="flex-1" onClick={() => openEdit(drawerVehicle)}>
+                                    Edit
+                                </Button>
+                                {drawerVehicle.status !== 'retired' && (
+                                    <Button
+                                        variant="danger"
+                                        className="flex-1"
+                                        onClick={() => setConfirmAction({ vehicle: drawerVehicle, type: 'retire' })}
+                                    >
+                                        Retire
+                                    </Button>
+                                )}
+                                {drawerVehicle.status === 'retired' && (
+                                    <Button
+                                        className="flex-1"
+                                        onClick={() => setConfirmAction({ vehicle: drawerVehicle, type: 'reinstate' })}
+                                    >
+                                        Reinstate
+                                    </Button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
             </Drawer>
+
+            <ConfirmDialog
+                open={!!confirmAction}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={handleConfirmAction}
+                title={confirmAction?.type === 'retire' ? 'Retire vehicle' : 'Reinstate vehicle'}
+                description={
+                    confirmAction?.type === 'retire'
+                        ? `${confirmAction?.vehicle.registration_number} will be retired — it can no longer be dispatched or sent for maintenance.`
+                        : `${confirmAction?.vehicle.registration_number} will become Available again.`
+                }
+                confirmLabel={confirmAction?.type === 'retire' ? 'Retire' : 'Reinstate'}
+                variant={confirmAction?.type === 'retire' ? 'danger' : 'primary'}
+            />
         </div>
     );
 }

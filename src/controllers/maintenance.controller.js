@@ -65,7 +65,10 @@ async function close(req, res) {
 
         const updated = await maintenanceModel.closeRecord(record.id, client);
         await client.query(
-            `UPDATE vehicles SET status = 'available', last_service_odometer_km = odometer_km, updated_at = now() WHERE id = $1`,
+            `UPDATE vehicles
+             SET status = CASE WHEN status = 'retired' THEN status ELSE 'available' END,
+                 last_service_odometer_km = odometer_km, updated_at = now()
+             WHERE id = $1`,
             [record.vehicle_id]
         );
 

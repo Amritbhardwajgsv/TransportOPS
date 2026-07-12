@@ -13,5 +13,7 @@ router.get('/', requireRole(...READ_ROLES), controller.list);
 router.get('/:id', requireRole(...READ_ROLES), controller.getOne);
 router.post('/', requireRole(...WRITE_ROLES), controller.create);
 router.put('/:id', requireRole(...WRITE_ROLES), controller.update);
+router.post('/:id/retire', requireRole(...WRITE_ROLES), controller.retire);
+router.post('/:id/reinstate', requireRole(...WRITE_ROLES), controller.reinstate);
 
 module.exports = router;
