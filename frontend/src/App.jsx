@@ -15,7 +15,7 @@ import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
 import Cities from './pages/Cities';
 import ThemeToggle from './components/ThemeToggle';
-import Register from "./pages/Register"; // adjust path to match your folder structure
+import Register from './pages/Register';
 
 
 function roleRoles(path) {
@@ -55,7 +55,7 @@ function AppRoutes() {
         <Routes>
             <Route path="/" element={<RootRoute />} />
             <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/register" element={user ? <Navigate to="/" replace /> : <Register />} />
             <Route
                 element={
                     <RequireAuth>

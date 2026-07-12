@@ -88,6 +88,14 @@
     padding-right: var(--page-gutter);
   }
 
+  .register-input {
+    @apply h-12 w-full rounded-lg border border-coal-600 bg-coal-950 px-3 text-sm text-smoke-100 outline-none placeholder:text-smoke-400;
+  }
+
+  .register-input:focus-visible {
+    @apply border-volt-400 ring-2 ring-volt-400 ring-offset-2 ring-offset-coal-950;
+  }
+
   .hazard-stripe {
     background-image: repeating-linear-gradient(
       45deg,
