@@ -3,6 +3,7 @@ const userModel = require('../models/user.model');
 const { signAccessToken, verifyAccessToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
 const roleModel = require('../models/role.model');
+const { sendWelcomeEmail } = require('../jobs/welcomeEmail.job');
 
 const SALT_ROUNDS = 10;
 const COOKIE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -31,6 +32,10 @@ async function register(req, res) {
 
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
         const user = await userModel.createUser({ name, email: normalizedEmail, passwordHash, role });
+
+        sendWelcomeEmail({ name: user.name, email: user.email, role: user.role }).catch((err) =>
+            console.error('Welcome email failed:', err)
+        );
 
         return res.status(201).json({ user });
     } catch (err) {
