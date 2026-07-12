@@ -29,7 +29,11 @@
 @layer base {
   body {
     @apply bg-coal-950 text-smoke-100 font-sans antialiased;
+    min-width: 320px;
+    overflow-x: hidden;
   }
+
+  button, a, input, select, textarea { touch-action: manipulation; }
 
   ::selection {
     @apply bg-volt-400 text-volt-950;
@@ -38,6 +42,10 @@
   * {
     @apply border-coal-600;
   }
+}
+
+@media (max-width: 639px) {
+  input, select, textarea { font-size: 16px !important; }
 }
 
 @layer utilities {

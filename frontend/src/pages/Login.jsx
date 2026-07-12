@@ -62,10 +62,10 @@ export default function Login() {
                 </p>
             </div>
 
-            <div className="flex flex-1 items-center justify-center bg-coal-950 p-6">
+            <div className="flex flex-1 items-center justify-center bg-coal-950 p-4 sm:p-6">
                 <form
                     onSubmit={handleSubmit}
-                    className={`animate-fade-in-up w-full max-w-sm rounded-lg border border-coal-600 bg-coal-900 p-8 ${
+                    className={`animate-fade-in-up w-full max-w-sm rounded-lg border border-coal-600 bg-coal-900 p-5 sm:p-8 ${
                         shake ? 'animate-shake' : ''
                     }`}
                     style={{ animationDelay: shake ? '0ms' : '150ms' }}

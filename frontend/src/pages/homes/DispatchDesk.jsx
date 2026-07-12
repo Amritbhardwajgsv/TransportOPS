@@ -21,7 +21,7 @@ export default function DispatchDesk() {
 
             <button
                 onClick={() => navigate('/trips')}
-                className="focus-volt flex w-full items-center justify-between rounded-lg bg-volt-400 p-6 text-left text-volt-950 hover:brightness-95"
+                className="focus-volt flex w-full items-center justify-between rounded-lg bg-volt-400 p-4 text-left text-volt-950 hover:brightness-95 sm:p-6"
             >
                 <div>
                     <p className="font-display text-xl font-semibold">New trip</p>
@@ -49,7 +49,7 @@ export default function DispatchDesk() {
                         {data.activeTrips.map((t) => (
                             <div
                                 key={t.id}
-                                className="flex items-center justify-between rounded-lg border border-coal-600 bg-coal-900 p-4"
+                                className="flex flex-col items-stretch gap-3 rounded-lg border border-coal-600 bg-coal-900 p-4 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div>
                                     <p className="text-sm text-smoke-100">

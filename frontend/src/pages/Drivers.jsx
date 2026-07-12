@@ -170,7 +170,7 @@ export default function Drivers() {
 
     return (
         <div>
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="font-display text-2xl font-semibold text-smoke-100">Drivers</h1>
                     <p className="mt-1 text-sm text-smoke-400">
@@ -185,7 +185,7 @@ export default function Drivers() {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
-                <div className="relative w-64">
+                <div className="relative w-full sm:w-64">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-smoke-400" />
                     <input
                         className="focus-volt h-10 w-full rounded-lg border border-coal-600 bg-coal-800 pl-9 pr-3 text-sm text-smoke-100 placeholder:text-smoke-400"
@@ -252,7 +252,7 @@ export default function Drivers() {
                             disabled={!canManage && Boolean(editing)}
                         />
                     </Field>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field label="License expiry">
                             <Input
                                 type="date"
@@ -314,7 +314,7 @@ export default function Drivers() {
                             </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row">
                             {canManage && (
                                 <Button variant="ghost" className="flex-1" onClick={() => openEdit(drawerDriver)}>
                                     Edit

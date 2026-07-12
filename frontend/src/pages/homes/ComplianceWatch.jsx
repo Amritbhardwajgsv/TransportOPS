@@ -55,7 +55,7 @@ export default function ComplianceWatch() {
         <div className="space-y-6">
             <RoleHeroHeader icon={ShieldCheck} title="Compliance Watch" description="Licenses, suspensions, and safety scores." />
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
                 <KpiCard label="Valid licenses" value={validLicenses} />
                 <KpiCard label="Expiring ≤30 days" value={data.drivers.expiringSoon} />
                 <KpiCard label="Expired" value={data.drivers.expired} />

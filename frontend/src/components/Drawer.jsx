@@ -12,13 +12,13 @@ export default function Drawer({ open, onClose, title, children }) {
                     open ? 'translate-x-0' : 'translate-x-full'
                 }`}
             >
-                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-coal-600 bg-coal-900 px-6 py-4">
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-coal-600 bg-coal-900 px-4 py-4 sm:px-6">
                     <h2 className="font-display text-lg font-semibold">{title}</h2>
-                    <button onClick={onClose} className="focus-volt rounded text-smoke-400 hover:text-smoke-100">
+                    <button onClick={onClose} aria-label="Close" className="focus-volt rounded-lg p-2 text-smoke-400 hover:text-smoke-100">
                         <X size={18} />
                     </button>
                 </div>
-                <div className="p-6">{children}</div>
+                <div className="p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-6">{children}</div>
             </div>
         </div>
     );

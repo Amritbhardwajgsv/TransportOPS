@@ -98,7 +98,7 @@ export default function Maintenance() {
 
     return (
         <div>
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="font-display text-2xl font-semibold text-smoke-100">Maintenance</h1>
                     <p className="mt-1 text-sm text-smoke-400">

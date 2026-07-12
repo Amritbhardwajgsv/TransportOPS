@@ -44,7 +44,7 @@ export default function Reports() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="font-display text-2xl font-semibold text-smoke-100">Reports</h1>
                     <p className="mt-1 text-sm text-smoke-400">Fleet-wide cost and efficiency, computed from real trip and fuel data.</p>
@@ -62,7 +62,7 @@ export default function Reports() {
                 {efficiencyData.length === 0 ? (
                     <EmptyState icon={BarChart3} title="No efficiency data yet" description="Complete trips and log fuel to see this chart." />
                 ) : (
-                    <div className="h-64 rounded-lg border border-coal-600 bg-coal-900 p-4">
+                    <div className="h-56 rounded-lg border border-coal-600 bg-coal-900 p-2 sm:h-64 sm:p-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={efficiencyData} layout="vertical" margin={{ left: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" horizontal={false} />
@@ -84,7 +84,7 @@ export default function Reports() {
                 {costData.length === 0 ? (
                     <EmptyState icon={BarChart3} title="No cost data yet" />
                 ) : (
-                    <div className="h-64 rounded-lg border border-coal-600 bg-coal-900 p-4">
+                    <div className="h-56 rounded-lg border border-coal-600 bg-coal-900 p-2 sm:h-64 sm:p-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={costData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" vertical={false} />

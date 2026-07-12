@@ -130,7 +130,7 @@ export default function Expenses() {
 
     return (
         <div>
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="font-display text-2xl font-semibold text-smoke-100">Fuel &amp; Expenses</h1>
                     <p className="mt-1 text-sm text-smoke-400">Track fuel consumption and operational costs per vehicle.</p>
@@ -140,7 +140,7 @@ export default function Expenses() {
                 </Button>
             </div>
 
-            <div className="mt-6 flex gap-2">
+            <div className="mt-6 grid grid-cols-2 gap-2 sm:flex">
                 <button
                     onClick={() => setTab('fuel')}
                     className={`focus-volt flex items-center gap-2 rounded-lg px-4 py-2 text-sm ${
@@ -203,7 +203,7 @@ export default function Expenses() {
                             ))}
                         </Select>
                     </Field>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field label="Liters">
                             <Input type="number" min="0.1" step="0.1" value={fuelForm.liters} onChange={(e) => setFuelForm((f) => ({ ...f, liters: e.target.value }))} />
                         </Field>

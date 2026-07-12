@@ -36,7 +36,7 @@ export default function CostConsole() {
         <div className="space-y-6">
             <RoleHeroHeader icon={Wallet} title="Cost Console" description="Where the money goes, per vehicle and per liter." />
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
                 <KpiCard label="Total fuel cost (month)" value={`₹${data.finance.totalFuelCostMonth.toLocaleString()}`} />
                 <KpiCard label="Total maintenance cost" value={`₹${data.finance.totalMaintenanceCost.toLocaleString()}`} />
                 <KpiCard
@@ -56,7 +56,7 @@ export default function CostConsole() {
                 {chartData.length === 0 ? (
                     <EmptyState icon={BarChart3} title="No cost data yet" description="Log fuel or maintenance to see this chart." />
                 ) : (
-                    <div className="h-64 rounded-lg border border-coal-600 bg-coal-900 p-4">
+                    <div className="h-56 rounded-lg border border-coal-600 bg-coal-900 p-2 sm:h-64 sm:p-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" vertical={false} />

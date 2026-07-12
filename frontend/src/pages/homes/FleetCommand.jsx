@@ -43,7 +43,7 @@ export default function FleetCommand() {
         <div className="space-y-6">
             <RoleHeroHeader icon={Truck} title="Fleet Command" description="Everything on the road, in the shop, and in between." />
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-7">
                 <KpiCard label="Active vehicles" value={activeVehicles} />
                 <KpiCard label="Available" value={data.vehicles.available} />
                 <KpiCard label="In maintenance" value={data.vehicles.inShop} />
@@ -62,7 +62,7 @@ export default function FleetCommand() {
                 {vehicles.length === 0 ? (
                     <EmptyState icon={Truck} title="No vehicles yet" description="Add your first vehicle to get the fleet on the road." />
                 ) : (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
                         {vehicles.map((v) => (
                             <button
                                 key={v.id}

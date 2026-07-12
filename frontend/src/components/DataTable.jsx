@@ -2,7 +2,10 @@ export default function DataTable({ columns, rows, keyField = 'id', onRowClick, 
     if (loading) {
         return (
             <div className="overflow-hidden rounded-lg border border-coal-600">
-                <table className="w-full text-sm">
+                <div className="space-y-3 p-3 sm:hidden">
+                    {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-lg bg-coal-800" />)}
+                </div>
+                <table className="hidden w-full text-sm sm:table">
                     <thead className="bg-coal-800 text-xs uppercase tracking-wider text-smoke-400">
                         <tr>
                             {columns.map((c) => (
@@ -33,7 +36,34 @@ export default function DataTable({ columns, rows, keyField = 'id', onRowClick, 
     }
 
     return (
-        <div className="overflow-x-auto rounded-lg border border-coal-600">
+        <div className="rounded-lg border border-coal-600">
+            <div className="divide-y divide-coal-600 sm:hidden">
+                {rows.map((row) => (
+                    <div
+                        key={row[keyField]}
+                        onClick={() => onRowClick?.(row)}
+                        onKeyDown={(event) => {
+                            if (onRowClick && (event.key === 'Enter' || event.key === ' ')) {
+                                event.preventDefault();
+                                onRowClick(row);
+                            }
+                        }}
+                        role={onRowClick ? 'button' : undefined}
+                        tabIndex={onRowClick ? 0 : undefined}
+                        className={`block w-full space-y-2 p-4 text-left ${onRowClick ? 'cursor-pointer active:bg-coal-800' : ''}`}
+                    >
+                        {columns.map((c) => (
+                            <div key={c.key} className="grid grid-cols-[minmax(5.5rem,0.8fr)_minmax(0,1.2fr)] items-start gap-3 text-sm">
+                                <span className="text-xs uppercase tracking-wide text-smoke-400">{c.header}</span>
+                                <span className={`min-w-0 break-words ${c.align === 'right' ? 'text-right font-mono' : 'text-right'}`}>
+                                    {c.render ? c.render(row) : row[c.key]}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+            <div className="hidden overflow-x-auto sm:block">
             <table className="w-full text-sm">
                 <thead className="bg-coal-800 text-xs uppercase tracking-wider text-smoke-400">
                     <tr>
@@ -63,6 +93,7 @@ export default function DataTable({ columns, rows, keyField = 'id', onRowClick, 
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 }

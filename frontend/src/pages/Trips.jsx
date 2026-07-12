@@ -210,7 +210,7 @@ export default function Trips() {
 
     return (
         <div>
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="font-display text-2xl font-semibold text-smoke-100">Trips</h1>
                     <p className="mt-1 text-sm text-smoke-400">Create, dispatch, and close out trips across the fleet.</p>
@@ -275,7 +275,7 @@ export default function Trips() {
                 }
             >
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field label="Source">
                             <Input value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
                         </Field>
@@ -309,7 +309,7 @@ export default function Trips() {
                         </Select>
                     </Field>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Field
                             label="Cargo weight (kg)"
                             error={cargoExceedsCapacity ? `Cargo ${Number(form.cargoWeightKg).toLocaleString()} kg exceeds capacity (${Number(selectedVehicle.max_load_kg).toLocaleString()} kg)` : undefined}
