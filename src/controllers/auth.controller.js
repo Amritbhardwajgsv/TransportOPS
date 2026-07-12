@@ -2,19 +2,23 @@ const bcrypt = require('bcryptjs');
 const userModel = require('../models/user.model');
 const { signAccessToken, verifyAccessToken } = require('../utils/jwt');
 const redisClient = require('../config/redis');
+const { ROLES } = require('../constants/roles');
 
 const SALT_ROUNDS = 10;
 const COOKIE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 async function register(req, res) {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'name, email and password are required' });
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({ message: 'name, email, password and role are required' });
         }
         if (password.length < 6) {
             return res.status(400).json({ message: 'password must be at least 6 characters' });
+        }
+        if (!ROLES.includes(role)) {
+            return res.status(400).json({ message: `role must be one of: ${ROLES.join(', ')}` });
         }
 
         const normalizedEmail = email.toLowerCase().trim();
@@ -24,7 +28,7 @@ async function register(req, res) {
         }
 
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-        const user = await userModel.createUser({ name, email: normalizedEmail, passwordHash });
+        const user = await userModel.createUser({ name, email: normalizedEmail, passwordHash, role });
 
         return res.status(201).json({ user });
     } catch (err) {
@@ -52,7 +56,7 @@ async function login(req, res) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        const token = signAccessToken({ sub: user.id, email: user.email });
+        const token = signAccessToken({ sub: user.id, email: user.email, role: user.role });
 
         res.cookie('token', token, {
             httpOnly: true,
@@ -63,7 +67,7 @@ async function login(req, res) {
 
         return res.status(200).json({
             token,
-            user: { id: user.id, name: user.name, email: user.email },
+            user: { id: user.id, name: user.name, email: user.email, role: user.role },
         });
     } catch (err) {
         console.error('Login error:', err);

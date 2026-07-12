@@ -18,7 +18,7 @@ async function requireAuth(req, res, next) {
         }
 
         const payload = verifyAccessToken(token);
-        req.user = { id: payload.sub, email: payload.email };
+        req.user = { id: payload.sub, email: payload.email, role: payload.role };
         req.token = token;
 
         next();
