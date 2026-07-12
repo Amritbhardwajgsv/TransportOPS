@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { findCity } = require('../constants/cities');
 
 async function countsByStatus(table) {
     const result = await pool.query(`SELECT status, COUNT(*)::int AS count FROM ${table} GROUP BY status`);
@@ -101,8 +100,11 @@ async function getSummary() {
         pool.query(`SELECT COUNT(*)::int AS count FROM vehicles WHERE status = 'available'`),
         pool.query(`SELECT COUNT(*)::int AS count FROM drivers WHERE status = 'available' AND license_expiry >= CURRENT_DATE`),
         pool.query(
-            `SELECT id, registration_number, model, status, current_location_city
-             FROM vehicles WHERE status != 'retired' ORDER BY registration_number`
+            `SELECT v.id, v.registration_number, v.model, v.status, v.current_location_city, c.lat, c.lng
+             FROM vehicles v
+             LEFT JOIN cities c ON c.name = v.current_location_city
+             WHERE v.status != 'retired' AND v.current_location_city IS NOT NULL
+             ORDER BY v.registration_number`
         ),
     ]);
 
@@ -165,19 +167,16 @@ async function getSummary() {
             drivers: readyDrivers.rows[0].count,
         },
         vehicleLocations: vehicleLocations.rows
-            .filter((v) => v.current_location_city && findCity(v.current_location_city))
-            .map((v) => {
-                const city = findCity(v.current_location_city);
-                return {
-                    id: v.id,
-                    registrationNumber: v.registration_number,
-                    model: v.model,
-                    status: v.status,
-                    city: v.current_location_city,
-                    lat: city.lat,
-                    lng: city.lng,
-                };
-            }),
+            .filter((v) => v.lat !== null && v.lng !== null)
+            .map((v) => ({
+                id: v.id,
+                registrationNumber: v.registration_number,
+                model: v.model,
+                status: v.status,
+                city: v.current_location_city,
+                lat: Number(v.lat),
+                lng: Number(v.lng),
+            })),
     };
 }
 

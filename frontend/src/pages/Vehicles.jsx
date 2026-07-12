@@ -12,7 +12,7 @@ import StatusBadge from '../components/StatusBadge';
 import PhotoThumb from '../components/PhotoThumb';
 import EmptyState from '../components/EmptyState';
 import { fileToBase64 } from '../lib/fileToBase64';
-import { CITIES } from '../constants/cities';
+import { useCities } from '../hooks/useCities';
 
 const VEHICLE_TYPES = ['truck', 'van', 'trailer', 'pickup'];
 const STATUS_FILTERS = ['available', 'on_trip', 'in_shop', 'retired'];
@@ -32,6 +32,7 @@ const emptyForm = {
 export default function Vehicles() {
     const { user } = useAuth();
     const { showToast } = useToast();
+    const { cities } = useCities();
     const canManage = user.role === 'fleet_manager';
 
     const [vehicles, setVehicles] = useState([]);
@@ -331,7 +332,7 @@ export default function Vehicles() {
                                 onChange={(e) => setForm((f) => ({ ...f, currentLocationCity: e.target.value }))}
                             >
                                 <option value="">Unknown</option>
-                                {CITIES.map((c) => (
+                                {cities.map((c) => (
                                     <option key={c.name} value={c.name}>
                                         {c.name}
                                     </option>

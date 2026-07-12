@@ -1,11 +1,10 @@
 const vehicleModel = require('../models/vehicle.model');
-const { CITIES } = require('../constants/cities');
+const cityModel = require('../models/city.model');
 
 const VEHICLE_TYPES = ['truck', 'van', 'trailer', 'pickup'];
 const MAX_PHOTO_LENGTH = 280000;
-const CITY_NAMES = CITIES.map((c) => c.name);
 
-function validateVehiclePayload(body) {
+async function validateVehiclePayload(body) {
     const { registrationNumber, model, type, maxLoadKg, photo, currentLocationCity } = body;
 
     if (!registrationNumber || !model || !type) {
@@ -20,8 +19,11 @@ function validateVehiclePayload(body) {
     if (photo && photo.length > MAX_PHOTO_LENGTH) {
         return 'photo is too large (max ~200KB)';
     }
-    if (currentLocationCity && !CITY_NAMES.includes(currentLocationCity)) {
-        return `currentLocationCity must be one of: ${CITY_NAMES.join(', ')}`;
+    if (currentLocationCity) {
+        const city = await cityModel.findCityByName(currentLocationCity);
+        if (!city) {
+            return `currentLocationCity must be a known city`;
+        }
     }
     return null;
 }
@@ -42,7 +44,7 @@ async function getOne(req, res) {
 
 async function create(req, res) {
     try {
-        const error = validateVehiclePayload(req.body);
+        const error = await validateVehiclePayload(req.body);
         if (error) {
             return res.status(422).json({ message: error });
         }
@@ -75,7 +77,7 @@ async function update(req, res) {
             return res.status(404).json({ message: 'Vehicle not found' });
         }
 
-        const error = validateVehiclePayload(req.body);
+        const error = await validateVehiclePayload(req.body);
         if (error) {
             return res.status(422).json({ message: error });
         }

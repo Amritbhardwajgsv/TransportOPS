@@ -11,6 +11,7 @@ const maintenanceRoutes = require('./routes/maintenance.routes');
 const fuelRoutes = require('./routes/fuel.routes');
 const expensesRoutes = require('./routes/expenses.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const citiesRoutes = require('./routes/cities.routes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/fuel-logs', fuelRoutes);
 app.use('/api/expenses', expensesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/cities', citiesRoutes);
 
 app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });

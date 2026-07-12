@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 const tripModel = require('../models/trip.model');
-const { findCity, distanceBetweenCities } = require('../constants/cities');
+const cityModel = require('../models/city.model');
 
 const SERVICE_DUE_KM = 10000;
 const DRIVER_REST_HOURS = 8;
@@ -120,7 +120,7 @@ async function create(req, res) {
             return res.status(error.status).json({ message: error.message });
         }
 
-        const computedDistance = distanceBetweenCities(source, destination) ?? plannedDistanceKm ?? null;
+        const computedDistance = (await cityModel.distanceBetweenCityNames(source, destination)) ?? plannedDistanceKm ?? null;
         let trip = await tripModel.createTrip(
             { source, destination, vehicleId, driverId, cargoWeightKg, plannedDistanceKm: computedDistance },
             client
@@ -213,7 +213,8 @@ async function complete(req, res) {
         }
 
         const updated = await tripModel.markCompleted(trip.id, { endOdometerKm, fuelConsumedLiters }, client);
-        const newLocationCity = findCity(trip.destination) ? trip.destination : null;
+        const destinationCity = await cityModel.findCityByName(trip.destination);
+        const newLocationCity = destinationCity ? trip.destination : null;
         await client.query(
             `UPDATE vehicles
              SET status = 'available', odometer_km = $1, updated_at = now(),

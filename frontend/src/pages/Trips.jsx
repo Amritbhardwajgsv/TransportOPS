@@ -10,7 +10,8 @@ import Field, { Input, Select } from '../components/Field';
 import StatusBadge from '../components/StatusBadge';
 import RuleCallout from '../components/RuleCallout';
 import EmptyState from '../components/EmptyState';
-import { CITIES, distanceBetweenCities } from '../constants/cities';
+import { useCities } from '../hooks/useCities';
+import { distanceBetween } from '../lib/distance';
 
 const STATUS_FILTERS = ['draft', 'dispatched', 'completed', 'cancelled'];
 
@@ -24,6 +25,7 @@ const emptyForm = {
 
 export default function Trips() {
     const { showToast } = useToast();
+    const { cities } = useCities();
 
     const [trips, setTrips] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -82,12 +84,12 @@ export default function Trips() {
         Number(form.cargoWeightKg) >= Number(selectedVehicle.max_load_kg) * 0.9;
 
     const plannedDistance =
-        form.source && form.destination ? distanceBetweenCities(form.source, form.destination) : null;
+        form.source && form.destination ? distanceBetween(cities, form.source, form.destination) : null;
 
     const sortedVehicles = [...availableVehicles].sort((a, b) => {
         if (!form.source) return 0;
-        const distA = a.current_location_city ? distanceBetweenCities(form.source, a.current_location_city) : null;
-        const distB = b.current_location_city ? distanceBetweenCities(form.source, b.current_location_city) : null;
+        const distA = a.current_location_city ? distanceBetween(cities, form.source, a.current_location_city) : null;
+        const distB = b.current_location_city ? distanceBetween(cities, form.source, b.current_location_city) : null;
         if (distA === null && distB === null) return 0;
         if (distA === null) return 1;
         if (distB === null) return -1;
@@ -296,7 +298,7 @@ export default function Trips() {
                         <Field label="Source">
                             <Select value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))}>
                                 <option value="">Select a city…</option>
-                                {CITIES.map((c) => (
+                                {cities.map((c) => (
                                     <option key={c.name} value={c.name}>
                                         {c.name}
                                     </option>
@@ -309,7 +311,7 @@ export default function Trips() {
                                 onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
                             >
                                 <option value="">Select a city…</option>
-                                {CITIES.map((c) => (
+                                {cities.map((c) => (
                                     <option key={c.name} value={c.name}>
                                         {c.name}
                                     </option>
@@ -330,7 +332,7 @@ export default function Trips() {
                             {sortedVehicles.map((v) => {
                                 const dist =
                                     form.source && v.current_location_city
-                                        ? distanceBetweenCities(form.source, v.current_location_city)
+                                        ? distanceBetween(cities, form.source, v.current_location_city)
                                         : null;
                                 return (
                                     <option key={v.id} value={v.id}>
