@@ -14,10 +14,10 @@ export default function Landing() {
     const navigate = useNavigate();
 
     return (
-        <main id="top" className="overflow-hidden bg-coal-950">
+        <main id="top" className="min-w-0 overflow-x-clip bg-coal-950">
             <section className="landing-hero page-boundary relative flex min-h-[90dvh] items-center border-b border-coal-600 py-24">
-                <div className="mx-auto grid w-full max-w-7xl items-center gap-14 lg:grid-cols-[1.15fr_0.85fr]">
-                    <div className="animate-fade-in-up">
+                <div className="mx-auto grid min-w-0 w-full max-w-7xl items-center gap-10 sm:gap-14 lg:grid-cols-[1.15fr_0.85fr]">
+                    <div className="animate-fade-in-up min-w-0">
                         <a href="#top" className="focus-volt inline-flex items-center gap-2 rounded-md" aria-label="TransitOps home">
                             <span className="h-2.5 w-2.5 bg-volt-400" />
                             <span className="font-display text-xl font-semibold tracking-wide text-smoke-100">TRANSITOPS</span>
@@ -25,7 +25,7 @@ export default function Landing() {
                         <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-coal-600 bg-coal-900 px-3 py-1.5 text-xs text-smoke-400">
                             <Sparkles size={14} className="text-volt-400" /> One source of truth for every fleet role
                         </div>
-                        <h1 className="mt-5 max-w-4xl font-display text-4xl font-semibold leading-[1.05] text-smoke-100 sm:text-6xl lg:text-7xl">
+                        <h1 className="mt-5 max-w-4xl break-words font-display text-4xl font-semibold leading-[1.05] text-smoke-100 sm:text-6xl lg:text-7xl">
                             <TypewriterText text="Fleet operations, off the spreadsheet." />
                         </h1>
                         <p className="mt-6 max-w-2xl text-base leading-7 text-smoke-400 sm:text-lg">
@@ -34,10 +34,11 @@ export default function Landing() {
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             <Button onClick={() => document.querySelector('#roles')?.scrollIntoView({ behavior: 'smooth' })}>Choose your role <ArrowRight size={16} /></Button>
                             <Button variant="ghost" onClick={() => navigate('/login')}>Sign in</Button>
+                            <a href="#why-transitops" className="focus-volt inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium text-smoke-400 transition hover:bg-coal-900 hover:text-smoke-100">Why TransitOps? <ArrowRight size={15} /></a>
                         </div>
                     </div>
 
-                    <div className="journey-float animate-fade-in-up relative" style={{ animationDelay: '140ms' }}>
+                    <div className="journey-float animate-fade-in-up relative min-w-0" style={{ animationDelay: '140ms' }}>
                         <div className="absolute -inset-10 rounded-full bg-volt-400/10 blur-3xl" />
                         <div className="relative overflow-hidden rounded-2xl border border-coal-600 bg-coal-900/95 p-5 shadow-2xl sm:p-7">
                             <div className="flex items-center justify-between gap-4">
@@ -88,14 +89,14 @@ export default function Landing() {
                 </div>
             </section>
 
-            <section className="page-boundary pb-20 sm:pb-28">
-                <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl border border-coal-600 bg-coal-900">
-                    <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
-                        <div className="relative flex flex-col justify-between overflow-hidden border-b border-coal-600 p-7 sm:p-10 lg:border-r lg:border-b-0">
+            <section id="why-transitops" className="page-boundary scroll-mt-8 pb-20 sm:pb-28">
+                <div className="why-transitops-panel mx-auto w-full min-w-0 max-w-7xl overflow-hidden rounded-2xl border border-coal-600 bg-coal-900 shadow-2xl sm:rounded-3xl">
+                    <div className="grid min-w-0 lg:grid-cols-[0.85fr_1.15fr]">
+                        <div className="relative min-w-0 flex flex-col justify-between overflow-hidden border-b border-coal-600 p-5 min-[380px]:p-6 sm:p-10 lg:border-r lg:border-b-0">
                             <div className="absolute -top-24 -left-24 h-56 w-56 rounded-full bg-volt-400/10 blur-3xl" />
                             <div className="relative">
                                 <p className="text-xs uppercase tracking-[0.22em] text-volt-400">Why we are different</p>
-                                <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-smoke-100 sm:text-5xl">
+                                <h2 className="mt-4 break-words font-display text-2xl font-semibold leading-tight text-smoke-100 min-[380px]:text-3xl sm:text-5xl">
                                     Most software records what happened.
                                     <span className="mt-2 block text-volt-400">TransitOps shapes what happens next.</span>
                                 </h2>
@@ -106,18 +107,18 @@ export default function Landing() {
                             <div className="relative mt-10 flex items-center gap-3 text-sm text-smoke-100"><span className="h-px w-10 bg-volt-400" /> Less chasing. Fewer assumptions. Better movement.</div>
                         </div>
 
-                        <div className="grid sm:grid-cols-2">
+                        <div className="grid min-w-0 sm:grid-cols-2">
                             {[
                                 { icon: Eye, kicker: 'Clarity over clutter', title: 'See the decision, not just the data.', text: 'Dashboards surface the few signals that need attention instead of burying teams under endless fields and charts.' },
                                 { icon: Link2, kicker: 'Connected by default', title: 'One action updates the whole operation.', text: 'Dispatch, availability, compliance, and cost stay connected—without teams reconciling separate spreadsheets later.' },
                                 { icon: Zap, kicker: 'Action over observation', title: 'Warnings lead somewhere useful.', text: 'An expired license, stale trip, or expensive vehicle appears beside the workflow that can resolve it.' },
                                 { icon: UsersRound, kicker: 'Built around people', title: 'Every role gets its own command center.', text: 'Managers, drivers, safety teams, and analysts work from focused views while sharing the same operational truth.' },
                             ].map(({ icon: Icon, kicker, title, text }, index) => (
-                                <article key={title} className={`group p-6 transition duration-300 hover:bg-coal-800 sm:p-8 ${index < 2 ? 'border-b border-coal-600' : ''} ${index % 2 === 0 ? 'sm:border-r sm:border-coal-600' : ''}`}>
+                                <article key={title} className={`group min-w-0 overflow-hidden p-5 transition duration-300 hover:bg-coal-800 min-[380px]:p-6 sm:p-8 ${index < 2 ? 'border-b border-coal-600' : ''} ${index % 2 === 0 ? 'sm:border-r sm:border-coal-600' : ''}`}>
                                     <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-coal-600 bg-coal-950 text-volt-400 transition duration-300 group-hover:-translate-y-1 group-hover:border-volt-400"><Icon size={19} /></span>
                                     <p className="mt-6 text-[11px] uppercase tracking-[0.18em] text-volt-400">{kicker}</p>
-                                    <h3 className="mt-2 font-display text-xl font-semibold text-smoke-100">{title}</h3>
-                                    <p className="mt-3 text-sm leading-6 text-smoke-400">{text}</p>
+                                    <h3 className="mt-2 break-words font-display text-lg font-semibold leading-6 text-smoke-100 min-[380px]:text-xl">{title}</h3>
+                                    <p className="mt-3 break-words text-sm leading-6 text-smoke-400">{text}</p>
                                 </article>
                             ))}
                         </div>

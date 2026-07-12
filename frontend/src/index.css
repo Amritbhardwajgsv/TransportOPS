@@ -67,6 +67,8 @@
     transition: background-color 180ms ease, color 180ms ease;
   }
 
+  #root { min-width: 0; overflow-x: clip; }
+
   button, a, input, select, textarea { touch-action: manipulation; }
 
   ::selection {
@@ -174,6 +176,23 @@
 .journey-float { animation: journey-float 5s ease-in-out 1s infinite; }
 .journey-progress { animation: journey-progress 1.8s cubic-bezier(.22,.75,.25,1) .45s both; }
 .journey-truck { animation: journey-drive 1.8s cubic-bezier(.22,.75,.25,1) .45s both; }
+
+.why-transitops-panel {
+  animation: why-panel-glow 5s ease-in-out infinite;
+  contain: paint;
+}
+
+.why-transitops-panel h2,
+.why-transitops-panel h3,
+.why-transitops-panel p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+@keyframes why-panel-glow {
+  0%, 100% { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22); }
+  50% { box-shadow: 0 24px 70px color-mix(in srgb, var(--color-volt-400) 12%, transparent); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
