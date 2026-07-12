@@ -5,6 +5,7 @@ import AppShell from './layout/AppShell';
 import RequireRole from './layout/RequireRole';
 import { NAV_ITEMS } from './layout/navConfig';
 import Login from './pages/Login';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import Vehicles from './pages/Vehicles';
 import Drivers from './pages/Drivers';
@@ -28,11 +29,27 @@ function RequireAuth({ children }) {
     return children;
 }
 
+function RootRoute() {
+    const { user, loading } = useAuth();
+    if (loading) {
+        return <div className="flex h-screen items-center justify-center bg-coal-950 text-smoke-400">Loading…</div>;
+    }
+    if (!user) {
+        return <Landing />;
+    }
+    return (
+        <AppShell>
+            <Dashboard />
+        </AppShell>
+    );
+}
+
 function AppRoutes() {
     const { user } = useAuth();
 
     return (
         <Routes>
+            <Route path="/" element={<RootRoute />} />
             <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
             <Route
                 element={
@@ -41,7 +58,6 @@ function AppRoutes() {
                     </RequireAuth>
                 }
             >
-                <Route path="/" element={<Dashboard />} />
                 <Route
                     path="/vehicles"
                     element={
