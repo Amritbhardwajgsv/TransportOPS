@@ -28,4 +28,12 @@ async function distanceBetweenCityNames(nameA, nameB) {
     return Math.round(haversineKm(Number(a.lat), Number(a.lng), Number(b.lat), Number(b.lng)));
 }
 
-module.exports = { listCities, findCityByName, distanceBetweenCityNames, haversineKm };
+async function createCity({ name, lat, lng }) {
+    const result = await pool.query(
+        `INSERT INTO cities (name, lat, lng) VALUES ($1, $2, $3) RETURNING id, name, lat, lng`,
+        [name, lat, lng]
+    );
+    return result.rows[0];
+}
+
+module.exports = { listCities, findCityByName, distanceBetweenCityNames, createCity, haversineKm };

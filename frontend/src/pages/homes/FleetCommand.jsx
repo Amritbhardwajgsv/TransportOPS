@@ -11,6 +11,7 @@ import StatusBadge from '../../components/StatusBadge';
 import PhotoThumb from '../../components/PhotoThumb';
 import EmptyState from '../../components/EmptyState';
 import FleetMap from '../../components/FleetMap';
+import DashboardGuide from '../../components/DashboardGuide';
 
 export default function FleetCommand() {
     const navigate = useNavigate();
@@ -45,6 +46,16 @@ export default function FleetCommand() {
         <div className="space-y-6">
             <RoleHeroHeader icon={Truck} title="Fleet Command" description="Everything on the road, in the shop, and in between." />
 
+            <DashboardGuide
+                description="Use this command center to understand fleet capacity, spot operational blockers, and move directly into the workflow that needs attention."
+                steps={[
+                    { label: 'Review capacity', detail: 'Start with availability, active trips, drivers on duty, and utilization to see whether the fleet can accept more work.' },
+                    { label: 'Resolve exceptions', detail: 'Check Needs attention for expired licenses, workshop vehicles, stale drafts, and assets that have not moved recently.' },
+                    { label: 'Take action', detail: 'Use the quick actions below to add assets, register drivers, create a trip, or record maintenance.' },
+                ]}
+                tip="Statuses update across the system. Dispatching a trip reserves its vehicle and driver; completing it makes both available again."
+            />
+
             <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-7">
                 <KpiCard label="Active vehicles" value={activeVehicles} />
                 <KpiCard label="Available" value={data.vehicles.available} />
@@ -61,13 +72,15 @@ export default function FleetCommand() {
 
             {data.vehicleLocations.length > 0 && (
                 <div>
-                    <h2 className="mb-3 font-display text-lg font-semibold text-smoke-100">Live fleet map</h2>
+                    <h2 className="font-display text-lg font-semibold text-smoke-100">Live fleet map</h2>
+                    <p className="mb-3 mt-1 text-sm text-smoke-400">Latest reported position of vehicles currently carrying active work.</p>
                     <FleetMap vehicles={data.vehicleLocations} />
                 </div>
             )}
 
             <div>
-                <h2 className="mb-3 font-display text-lg font-semibold text-smoke-100">Fleet board</h2>
+                <h2 className="font-display text-lg font-semibold text-smoke-100">Fleet board</h2>
+                <p className="mb-3 mt-1 text-sm text-smoke-400">A quick snapshot of each vehicle and whether it can be assigned right now.</p>
                 {vehicles.length === 0 ? (
                     <EmptyState icon={Truck} title="No vehicles yet" description="Add your first vehicle to get the fleet on the road." />
                 ) : (

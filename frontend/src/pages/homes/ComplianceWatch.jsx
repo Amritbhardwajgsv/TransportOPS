@@ -9,6 +9,7 @@ import RuleCallout from '../../components/RuleCallout';
 import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
 import EmptyState from '../../components/EmptyState';
+import DashboardGuide from '../../components/DashboardGuide';
 
 export default function ComplianceWatch() {
     const navigate = useNavigate();
@@ -55,6 +56,16 @@ export default function ComplianceWatch() {
         <div className="space-y-6">
             <RoleHeroHeader icon={ShieldCheck} title="Compliance Watch" description="Licenses, suspensions, and safety scores." />
 
+            <DashboardGuide
+                description="Use this view to prevent compliance risks before dispatch by prioritizing expired documents, upcoming renewals, and unsafe driver records."
+                steps={[
+                    { label: 'Scan the totals', detail: 'Expired, expiring-soon, and suspended counts show the most urgent compliance workload.' },
+                    { label: 'Review the radar', detail: 'Inspect license dates and safety scores. Warning colors identify records that need earlier action.' },
+                    { label: 'Update eligibility', detail: 'Open a driver record to correct details, suspend an unsafe driver, or reinstate an eligible one.' },
+                ]}
+                tip="Expired or suspended drivers are automatically excluded from trip assignment, so compliance decisions immediately affect dispatch."
+            />
+
             <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
                 <KpiCard label="Valid licenses" value={validLicenses} />
                 <KpiCard label="Expiring ≤30 days" value={data.drivers.expiringSoon} />
@@ -65,7 +76,8 @@ export default function ComplianceWatch() {
             <RuleCallout>Drivers with expired licenses or Suspended status never appear in dispatch.</RuleCallout>
 
             <div>
-                <h2 className="mb-3 font-display text-lg font-semibold text-smoke-100">License radar</h2>
+                <h2 className="font-display text-lg font-semibold text-smoke-100">License radar</h2>
+                <p className="mb-3 mt-1 text-sm text-smoke-400">Select any driver to open the full record and take a compliance action.</p>
                 <DataTable
                     columns={columns}
                     rows={drivers}

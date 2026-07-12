@@ -7,6 +7,7 @@ import KpiCard from '../../components/KpiCard';
 import Button from '../../components/Button';
 import DataTable from '../../components/DataTable';
 import EmptyState from '../../components/EmptyState';
+import DashboardGuide from '../../components/DashboardGuide';
 
 export default function CostConsole() {
     const navigate = useNavigate();
@@ -36,6 +37,16 @@ export default function CostConsole() {
         <div className="space-y-6">
             <RoleHeroHeader icon={Wallet} title="Cost Console" description="Where the money goes, per vehicle and per liter." />
 
+            <DashboardGuide
+                description="Use this financial view to reconcile recent spending, compare vehicle cost profiles, and identify where operational efficiency is slipping."
+                steps={[
+                    { label: 'Check headline cost', detail: 'Review fuel, maintenance, total operational cost, and average efficiency for a fast financial health check.' },
+                    { label: 'Compare vehicles', detail: 'The stacked chart separates fuel and maintenance so unusually expensive assets stand out.' },
+                    { label: 'Verify and report', detail: 'Review recent logs, add missing costs, then open Reports for fleet-wide analysis and export.' },
+                ]}
+                tip="Fuel cost is month-based while the operational total can include all-time maintenance and expenses; use the metric hints for calculation details."
+            />
+
             <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
                 <KpiCard label="Total fuel cost (month)" value={`₹${data.finance.totalFuelCostMonth.toLocaleString()}`} />
                 <KpiCard label="Total maintenance cost" value={`₹${data.finance.totalMaintenanceCost.toLocaleString()}`} />
@@ -52,7 +63,8 @@ export default function CostConsole() {
             </div>
 
             <div>
-                <h2 className="mb-3 font-display text-lg font-semibold text-smoke-100">Cost per vehicle</h2>
+                <h2 className="font-display text-lg font-semibold text-smoke-100">Cost per vehicle</h2>
+                <p className="mb-3 mt-1 text-sm text-smoke-400">Compare each vehicle's fuel and maintenance contribution to total fleet spend.</p>
                 {chartData.length === 0 ? (
                     <EmptyState icon={BarChart3} title="No cost data yet" description="Log fuel or maintenance to see this chart." />
                 ) : (

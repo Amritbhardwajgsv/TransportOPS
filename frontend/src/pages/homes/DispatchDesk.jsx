@@ -6,6 +6,7 @@ import RuleCallout from '../../components/RuleCallout';
 import Button from '../../components/Button';
 import StatusBadge from '../../components/StatusBadge';
 import EmptyState from '../../components/EmptyState';
+import DashboardGuide from '../../components/DashboardGuide';
 
 export default function DispatchDesk() {
     const navigate = useNavigate();
@@ -18,6 +19,16 @@ export default function DispatchDesk() {
     return (
         <div className="space-y-6">
             <RoleHeroHeader icon={Route} title="Dispatch Desk" description="Create trips, dispatch, and close them out." />
+
+            <DashboardGuide
+                description="This workspace guides a trip from route planning to completion while preventing unavailable drivers or vehicles from being assigned."
+                steps={[
+                    { label: 'Create the route', detail: 'Open New trip and enter the origin, destination, schedule, and expected cargo details.' },
+                    { label: 'Assign and dispatch', detail: 'Choose from eligible vehicles and drivers. Only resources that are ready appear for assignment.' },
+                    { label: 'Close the trip', detail: 'When delivery finishes, record the ending details and complete the trip to release its resources.' },
+                ]}
+                tip="The ready-now count tells you how many vehicles and drivers can be assigned before you begin creating a trip."
+            />
 
             <button
                 onClick={() => navigate('/trips')}
@@ -41,7 +52,8 @@ export default function DispatchDesk() {
             </RuleCallout>
 
             <div>
-                <h2 className="mb-3 font-display text-lg font-semibold text-smoke-100">My active trips</h2>
+                <h2 className="font-display text-lg font-semibold text-smoke-100">My active trips</h2>
+                <p className="mb-3 mt-1 text-sm text-smoke-400">Trips currently dispatched and waiting to be completed or updated.</p>
                 {data.activeTrips.length === 0 ? (
                     <EmptyState icon={Route} title="No active trips" description="Dispatch a trip to see it here." />
                 ) : (
